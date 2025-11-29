@@ -1,0 +1,86 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #f8b4d9;
+    --primary-dark: #e591c3;
+    --secondary-color: #a8d5e2;
+    --accent-color: #ffd700;
+    --text-dark: #2c2c2c;
+    --text-light: #6b6b6b;
+    --bg-light: #fef9fb;
+    --bg-white: #ffffff;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+    --border-radius: 16px;
+    --transition: all 0.3s ease;
+}
+
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #ffffff;
+    color: var(--text-dark);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* 스크롤바 스타일링 - 일반 피팅 화면과 동일 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ad9f41;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #8b7d2a;
+}
+
+/* Firefox용 스크롤바 스타일링 */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #ad9f41 #f5f5f5;
+}
+
+#root {
+    min-height: 100vh;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: var(--transition);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+h1,
+h2,
+h3 {
+    font-weight: 600;
+}

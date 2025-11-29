@@ -1,0 +1,1051 @@
+/* 커스텀 피팅에서 헤더 위치 고정 - 일반 피팅과 동일한 위치 */
+.content-wrapper.custom-wrapper {
+    flex-direction: column;
+}
+
+/* 커스텀 피팅에서 preview-container 내부 이미지 width 넓히기 */
+.fitting-container .content-wrapper.custom-wrapper .step-guide-panel .preview-container .preview-image {
+    width: 110% !important;
+}
+
+/* 커스텀 피팅에서 preview-container 위치 위로 올리기 */
+.fitting-container .content-wrapper.custom-wrapper .step-guide-panel .preview-container {
+    margin-top: -50px;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 610px !important;
+    max-height: 620px !important;
+    padding: 0 !important;
+    border-width: 10px !important;
+}
+
+/* 커스텀 피팅에서 step-guide-panel 전체 영역 위로 올리기 */
+.content-wrapper.custom-wrapper .step-guide-panel {
+    margin-top: -80px;
+}
+
+/* 커스텀 피팅 step3에서 필터 버튼들을 우측에 세로 배치 */
+.content-wrapper.custom-wrapper .step-guide-panel-step3 {
+    position: relative;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step3 .step-result-actions {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    margin-top: 0;
+    margin-left: 0;
+    width: auto;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step3 .step-result-actions .filter-buttons-container {
+    margin-bottom: 0;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step3 .step-result-actions .download-button {
+    margin-top: 150px !important;
+    margin-right: 290px !important;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-buttons-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 8px !important;
+    margin-right: 50px !important;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    margin-bottom: 4px;
+    margin-right: 220px !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: default;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-label i {
+    font-size: 16px;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-buttons {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    margin-right: 150px !important;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-button {
+    min-width: 120px;
+    text-align: center;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-button.active {
+    background: #aca15d;
+    color: #ffffff;
+}
+
+/* 커스텀 피팅 STEP 2 문구와 라벨 중앙 정렬 */
+.content-wrapper.custom-wrapper .step-guide-panel-step2 .step-2-header {
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    margin-top: 150px;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step2 .step-2-text {
+    text-align: center;
+    align-items: center;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step2 .step-title,
+.content-wrapper.custom-wrapper .step-guide-panel-step2 .step-description {
+    text-align: center;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step2 .step-panel-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    align-items: flex-end;
+}
+
+.content-wrapper.custom-wrapper .step-guide-panel-step2 .step-panel-content .step-link-button {
+    position: absolute;
+    top: 200px;
+    right: 80px;
+    margin: 0;
+    z-index: 10;
+}
+
+.content-wrapper.custom-wrapper>.general-fitting-header {
+    width: 100%;
+    margin-left: 40px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.content-wrapper.custom-wrapper>.custom-content-row {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+    gap: 0;
+}
+
+.custom-left {
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 320px;
+    max-width: 320px;
+    gap: 12px;
+    overflow: hidden;
+    padding: 16px;
+    background: #ffffff;
+    margin-left: 40px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+}
+
+.custom-left.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    user-select: none;
+}
+
+.custom-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: visible;
+    padding: 24px 60px 24px 24px;
+}
+
+/* 업로드 카드 */
+.custom-upload-card {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    align-items: stretch;
+    margin-bottom: 0;
+
+}
+
+.custom-upload-card>* {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+}
+
+.custom-left .analyze-button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    background: #ad9f41;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(173, 159, 65, 0.3);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.custom-left .analyze-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent);
+    animation: shimmer 4s infinite;
+    z-index: 1;
+}
+
+.custom-left .analyze-button>* {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+.custom-left .analyze-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(173, 159, 65, 0.4);
+    background: #9e9137;
+}
+
+.custom-left .analyze-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.custom-left .analyze-button:disabled::before {
+    animation: none;
+}
+
+/* 결과 컨테이너 */
+.custom-result-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+    box-sizing: border-box;
+}
+
+.result-placeholder {
+    text-align: center;
+    color: #999;
+}
+
+.result-placeholder p {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.result-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.result-image-wrapper .result-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+
+.result-image-wrapper .result-image.fade-transition {
+    animation: smoothFadeTransition 1s ease-in-out;
+}
+
+@keyframes smoothFadeTransition {
+    0% {
+        opacity: 1;
+        transform: scale(1) translateZ(0);
+    }
+
+    40% {
+        opacity: 0.2;
+        transform: scale(0.95) translateZ(0);
+    }
+
+    60% {
+        opacity: 0.2;
+        transform: scale(0.95) translateZ(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateZ(0);
+    }
+}
+
+
+.result-image-wrapper.transitioning .result-image {
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+.result-image-wrapper.transitioning {
+    transition: all 0.5s ease-in-out;
+}
+
+.result-image-wrapper .processing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.result-image-wrapper .processing-overlay p {
+    margin-top: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #000000;
+    pointer-events: none;
+}
+
+.result-image-wrapper .processing-overlay .loading-message {
+    margin-top: 16px;
+    font-size: 16px;
+    font-weight: 400;
+    font-family: 'Orbit', 'Static', sans-serif;
+    color: #000000;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+    min-height: 24px;
+}
+
+.result-image-wrapper .processing-overlay .progress-bar-container {
+    margin-top: 10px;
+    width: 80%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.result-image-wrapper .processing-overlay .progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.result-image-wrapper .processing-overlay .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ad9f41 0%, #c4b563 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease-out;
+    box-shadow: 0 2px 4px rgba(173, 159, 65, 0.3);
+}
+
+.result-image-wrapper .processing-overlay .progress-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    pointer-events: none;
+}
+
+.preview-container .processing-overlay .loading-notice,
+.image-upload-wrapper .preview-container .processing-overlay .loading-notice {
+    font-size: 12px;
+    color: rgba(102, 102, 102, 0.842);
+    margin-top: 180px;
+    text-align: center;
+    font-weight: 400;
+}
+
+.processing-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.processing-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #000000;
+    margin: 0;
+}
+
+.spinner-lottie+.processing-text {
+    margin-top: -20px;
+}
+
+.processing-subtext {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.completion-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #22c55e;
+    color: white;
+    font-size: 48px;
+    font-weight: 700;
+}
+
+.spinner-lottie {
+    width: 250px;
+    height: 250px;
+    object-fit: contain;
+    pointer-events: none;
+    filter: brightness(0) saturate(100%) invert(67%) sepia(12%) saturate(507%) hue-rotate(12deg) brightness(90%) contrast(120%);
+    opacity: 1;
+}
+
+.custom-upload-area {
+    background: #f1efef;
+    border: 2px dashed #d0d0d0;
+    border-radius: 12px;
+    padding: 20px 16px;
+    margin-top: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+    height: 80%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.custom-upload-area:hover {
+    background: #fff;
+    border-color: #e0e0e0;
+    transform: none;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.custom-upload-area.dragging {
+    background: #f5f5f5;
+    border-color: #4b4737;
+    transform: scale(1.01);
+}
+
+.upload-icon {
+    font-size: 36px;
+    margin-bottom: 6px;
+    opacity: 0.7;
+}
+
+.upload-icon img {
+    width: 36px;
+    height: 36px;
+}
+
+.upload-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Custom Upload Validation Overlay and Loader */
+.custom-upload-area.processing {
+    position: relative;
+    cursor: pointer;
+}
+
+.custom-upload-area .validation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    border-radius: inherit;
+    z-index: 1;
+}
+
+.custom-upload-area .validation-loader-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 60px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    z-index: 2;
+    width: auto;
+    height: auto;
+}
+
+.custom-upload-area .validation-loader-wrapper .upload-text {
+    font-size: 14px;
+    color: #212121;
+    margin: 0;
+    text-align: center;
+}
+
+.custom-upload-area .validation-loader-wrapper .loader {
+    order: 1 !important;
+}
+
+.custom-upload-area .validation-loader-wrapper .upload-text {
+    order: 2 !important;
+}
+
+/* Loader Style */
+.custom-upload-area .validation-loader-wrapper .loader {
+    position: relative !important;
+    width: 80px !important;
+    height: 80px !important;
+    border: 4px solid #fcfafa94 !important;
+    overflow: hidden !important;
+    border-radius: 50% !important;
+    box-shadow: -5px -5px 5px rgba(255, 255, 255, 0.1),
+        10px 10px 10px rgba(0, 0, 0, 0.4),
+        inset -5px -5px 5px rgba(255, 255, 255, 0.2),
+        inset 10px 10px 10px rgba(0, 0, 0, 0.4) !important;
+    max-width: none !important;
+    color: inherit !important;
+    font-size: inherit !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+}
+
+.custom-upload-area .validation-loader-wrapper .loader::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 13px !important;
+    left: 13px !important;
+    right: 13px !important;
+    bottom: 13px !important;
+    z-index: 10 !important;
+    background: #fcfafa94 !important;
+    border-radius: 50% !important;
+    border: 2px solid #fcfafa94 !important;
+    box-shadow: inset -2px -2px 5px rgba(255, 255, 255, 0.2),
+        inset 3px 3px 5px rgba(0, 0, 0, 0.5) !important;
+    width: auto !important;
+    height: auto !important;
+    filter: none !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+.custom-upload-area .validation-loader-wrapper .loader::after {
+    display: none !important;
+}
+
+.custom-upload-area .validation-loader-wrapper .loader span {
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 50% !important;
+    background-image: linear-gradient(-225deg,
+            #ff7402 0%,
+            #ffe700 50%,
+            #fff55e 100%) !important;
+    filter: blur(20px) !important;
+    z-index: -1 !important;
+    animation: animate 0.5s linear infinite !important;
+    top: 0 !important;
+    left: 0 !important;
+    transition: none !important;
+}
+
+@keyframes animate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.custom-preview-container {
+    position: relative;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e0e0e0;
+    transition: var(--transition);
+    overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.custom-preview-container.dragging {
+    background: #f5f5f5;
+    border-color: #4b4737;
+    transform: scale(1.01);
+}
+
+.custom-preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 0;
+    pointer-events: none;
+}
+
+.custom-remove-button {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 99, 99, 0.9);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 600;
+    transition: var(--transition);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+}
+
+.custom-remove-button:hover {
+    background: rgba(255, 99, 99, 1);
+    transform: scale(1.1);
+}
+
+
+.result-buttons-group {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.result-image-wrapper .download-button {
+    position: relative !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    background: #70964e !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    transition: var(--transition) !important;
+    z-index: 10 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    border: none !important;
+    cursor: pointer !important;
+    width: auto !important;
+}
+
+.result-image-wrapper .download-button:hover {
+    background: #70964e !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px #70964e !important;
+}
+
+
+
+
+@media (max-width: 768px) {
+
+    /* 커스텀 피팅 모바일 레이아웃 조정 */
+    .content-wrapper.custom-wrapper>.custom-content-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    /* 모바일 버전 - 커스텀피팅 헤더 및 description 마진 조정 */
+    .content-wrapper.custom-wrapper>.general-fitting-header {
+        margin-left: 0;
+        margin-top: 25px;
+        margin-bottom: 0;
+        padding: 0 16px;
+    }
+
+    .content-wrapper.custom-wrapper>.general-fitting-header .tab-guide-text-wrapper {
+        margin-bottom: -8px;
+    }
+
+    .custom-left {
+        flex: 1 1 auto;
+        min-width: 100%;
+        max-width: 100%;
+        width: 100%;
+        margin-left: 0;
+        margin-top: 0;
+        padding: 12px;
+        gap: 12px;
+    }
+
+    /* STEP 1일 때 모바일에서 업로드 영역 숨기기 */
+    .custom-left.disabled {
+        display: none;
+    }
+
+    .custom-right {
+        flex: 1 1 auto;
+        padding: 16px;
+        min-width: 0;
+    }
+
+    .custom-upload-card {
+        min-height: 150px;
+    }
+
+    .custom-upload-area {
+        padding: 15px 12px;
+        min-height: 140px;
+        height: auto;
+        margin-top: 0;
+    }
+
+    /* 모바일에서 로딩 아이콘과 문구를 오른쪽으로 이동 */
+    .custom-upload-area .validation-loader-wrapper {
+        left: auto !important;
+        right: 110px !important;
+        transform: translateY(-50%) !important;
+        gap: 12px !important;
+    }
+
+    /* 모바일에서 로딩 아이콘 크기 줄이기 */
+    .custom-upload-area .validation-loader-wrapper .loader {
+        width: 50px !important;
+        height: 50px !important;
+        border: 3px solid #fcfafa94 !important;
+    }
+
+    .custom-upload-area .validation-loader-wrapper .loader::before {
+        top: 8px !important;
+        left: 8px !important;
+        right: 8px !important;
+        bottom: 8px !important;
+        border: 1.5px solid #fcfafa94 !important;
+    }
+
+    /* 모바일에서 로딩 문구 크기 줄이기 */
+    .custom-upload-area .validation-loader-wrapper .upload-text {
+        font-size: 11px !important;
+    }
+
+    .upload-icon {
+        font-size: 32px;
+    }
+
+    .upload-icon img {
+        width: 32px;
+        height: 32px;
+    }
+
+    .upload-text {
+        font-size: 13px;
+    }
+
+    .custom-left .analyze-button {
+        padding: 12px;
+        font-size: 1rem;
+        margin-top: 8px;
+    }
+
+    /* STEP 3 모바일 조정 */
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 {
+        padding: 20px 12px;
+    }
+
+    /* 일반 피팅과 완전히 동일하게 필터 버튼 스타일 적용 */
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .step-result-actions {
+        position: relative !important;
+        right: auto !important;
+        top: auto !important;
+        transform: none !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin-top: 16px !important;
+        margin-left: 0 !important;
+        width: 100% !important;
+        flex-wrap: wrap !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .step-result-actions .filter-buttons-container {
+        width: auto !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        margin-right: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        flex: 1 !important;
+        position: relative !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-buttons-container {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-label {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+        white-space: nowrap !important;
+        margin-right: 8px !important;
+        margin-bottom: 0 !important;
+        margin-left: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-label i {
+        font-size: 14px !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-buttons-wrapper {
+        position: relative !important;
+        flex: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        overflow: hidden !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-nav-button {
+        display: none !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-buttons {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+        flex: 1 !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+        scroll-behavior: smooth !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-right: 15px !important;
+        position: relative !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-buttons::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    /* 4번째 버튼이 살짝 보이도록 오버레이 */
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-buttons-wrapper::after {
+        content: '' !important;
+        position: absolute !important;
+        right: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        width: 25px !important;
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.95)) !important;
+        pointer-events: none !important;
+        z-index: 2 !important;
+    }
+
+    /* 모바일에서만 필터 네비게이션 버튼 표시 */
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-nav-button {
+        display: flex !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-button {
+        min-width: calc(33.333% - 4px) !important;
+        max-width: calc(33.333% - 4px) !important;
+        padding: 8px 10px !important;
+        font-size: 11px !important;
+        flex-shrink: 0 !important;
+        background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%) !important;
+        border: 1px solid #d0d0d0 !important;
+        border-radius: 2px !important;
+        color: #333 !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-button:hover {
+        background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%) !important;
+        border-color: #d0d0d0 !important;
+        transform: none !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-button.active {
+        background: #97916e !important;
+        border-color: #97916e !important;
+        color: white !important;
+        box-shadow: 0 3px 8px rgba(112, 150, 78, 0.4) !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-button.active:hover {
+        background: #97916e !important;
+        border-color: #97916e !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .step-result-actions .download-button {
+        position: static !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+        background: #70964e !important;
+        color: white !important;
+        padding: 6px 12px !important;
+        border-radius: 6px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px #70964e !important;
+        border: none !important;
+        cursor: pointer !important;
+        width: auto !important;
+        margin-top: -115px !important;
+        margin-right: 12px !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .step-result-actions .download-button:hover {
+        background: #70964e !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px #70964e !important;
+    }
+
+    /* STEP 2 모바일 조정 */
+    .content-wrapper.custom-wrapper .step-guide-panel-step2 .step-2-header {
+        margin-top: 0;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step2 .step-panel-content {
+        gap: 12px;
+        align-items: center;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step2 .step-panel-content .step-link-button {
+        position: static;
+        align-self: flex-end;
+        top: auto;
+        right: auto;
+        margin: 0;
+    }
+
+    /* 배경 선택 버튼 모바일 조정 */
+    .background-selector.step-background-selector {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .background-button {
+        aspect-ratio: 1;
+        min-height: 80px;
+    }
+
+    /* preview-container 모바일 조정 */
+    .fitting-container .content-wrapper.custom-wrapper .step-guide-panel .preview-container {
+        margin-top: 0 !important;
+        height: 300px !important;
+        max-height: 300px !important;
+    }
+
+    .preview-container .processing-overlay .loading-notice,
+    .image-upload-wrapper .preview-container .processing-overlay .loading-notice {
+        font-size: 10px !important;
+        color: rgba(102, 102, 102, 0.842) !important;
+        margin-top: 50px !important;
+        text-align: center !important;
+        font-weight: 400 !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel {
+        margin-top: 0 !important;
+        padding: 20px 12px;
+    }
+}

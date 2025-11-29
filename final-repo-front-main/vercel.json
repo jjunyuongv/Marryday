@@ -1,0 +1,38 @@
+{
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "devCommand": "npm run dev",
+    "installCommand": "npm install",
+    "framework": "vite",
+    "redirects": [
+        {
+            "source": "/(.*)",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "marryday-front.vercel.app"
+                }
+            ],
+            "destination": "https://www.marryday.co.kr/$1",
+            "permanent": true
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/api/:path*",
+            "destination": "http://marryday.kro.kr/api/:path*"
+        },
+        {
+            "source": "/fit/:path*",
+            "destination": "http://marryday.kro.kr/fit/:path*"
+        },
+        {
+            "source": "/visitor/:path*",
+            "destination": "http://marryday.kro.kr/visitor/:path*"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}

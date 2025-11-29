@@ -1,0 +1,718 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbit&family=Static&display=swap');
+
+.dress-selection {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    padding: 30px 0 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.dress-selection.processing {
+    pointer-events: none;
+}
+
+.dress-selection.processing .category-buttons-wrapper,
+.dress-selection.processing .dress-grid-container,
+.dress-selection.processing .vertical-slider {
+    filter: grayscale(100%) opacity(0.9);
+}
+
+.dress-selection-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(250, 248, 248, 0.233);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    text-align: center;
+    padding: 20px;
+    pointer-events: none;
+}
+
+.dress-selection-overlay-text {
+    color: #4a4a4a;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* 카테고리 버튼 컨테이너 */
+.category-buttons-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    padding: 0;
+    flex-shrink: 0;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    position: relative;
+}
+
+.category-nav-button.prev {
+    margin-right: 50px;
+}
+
+.category-nav-button.next {
+    margin-left: 50px;
+}
+
+/* 카테고리 네비게이션 버튼 */
+.category-nav-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #ad9f41;
+    background: #ad9f41;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+    padding-bottom: 5px;
+    margin: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.category-nav-button:hover:not(:disabled) {
+    background: #ad9f41;
+    color: white;
+    transform: scale(1.1);
+}
+
+.category-nav-button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* 카테고리 버튼 스타일 */
+.category-buttons {
+    display: flex;
+    gap: 12px;
+    flex: 0 1 auto;
+    min-width: 0;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.category-buttons::-webkit-scrollbar {
+    display: none;
+}
+
+.category-button {
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Orbit', 'Static', sans-serif;
+    color: var(--text-dark);
+    background: white;
+    border: 2px solid #e5e5e5;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.category-button:hover {
+    border-color: #ad9f41;
+    background: rgba(118, 108, 8, 0.05);
+}
+
+.category-button.active {
+    background: #ad9f41;
+    color: white;
+    border-color: #ad9f41;
+}
+
+/* 커스텀 메시지 */
+.custom-message {
+    padding: 80px 20px;
+    text-align: center;
+    color: var(--text-light);
+    font-size: 16px;
+    width: 100%;
+}
+
+/* 드레스 컨텐츠 래퍼 */
+.dress-content-wrapper {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 85%;
+    display: flex;
+    gap: 16px;
+    padding-right: 8px;
+    padding-left: 50px;
+    pointer-events: auto;
+}
+
+/* 드레스 그리드 컨테이너 - 세로 스크롤 숨김 */
+.dress-grid-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 20px 20px;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    /* 스크롤바 숨김 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    pointer-events: auto;
+}
+
+/* ============================================
+   모바일 버전 (768px 이하) - 시작
+   ============================================ */
+
+@media (max-width: 768px) {
+    .dress-grid-container {
+        padding: 0 8px 0 !important;
+    }
+}
+
+.dress-grid-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* ============================================
+   모바일 버전 (768px 이하) - 드레스 그리드 컨테이너
+   ============================================ */
+/* 모바일에서 가로 스크롤 활성화 (한 줄에 2개씩 보이도록) */
+@media (max-width: 768px) {
+    .dress-grid-container {
+        overflow-y: hidden;
+        overflow-x: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #ad9f41 #f5f5f5;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        padding: 0 8px 0 !important;
+    }
+
+    .dress-grid-container::-webkit-scrollbar {
+        display: block;
+        height: 6px;
+    }
+
+    .dress-grid-container::-webkit-scrollbar-track {
+        background: #f5f5f5;
+        border-radius: 3px;
+    }
+
+    .dress-grid-container::-webkit-scrollbar-thumb {
+        background: #ad9f41;
+        border-radius: 3px;
+    }
+
+    /* 모바일 버전 - 카드가 1개일 때 스크롤 비활성화 및 중앙 정렬 */
+    .dress-grid-container:has(.dress-grid:has(.dress-card:only-child)) {
+        overflow-x: hidden;
+        display: flex;
+        justify-content: center;
+    }
+}
+
+.dress-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
+    align-items: flex-start;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.dress-card {
+    position: relative;
+    width: calc(50% - 6px);
+    padding-top: calc((50% - 6px) * 0.65);
+    margin-top: 10px;
+    background: #f5f5f5;
+    border: 1px solid #080808;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: grab;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.dress-card:active {
+    cursor: grab;
+}
+
+.dress-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.dress-card:hover .drag-hint {
+    opacity: 1;
+}
+
+/* 매칭 중일 때 호버 효과 비활성화 */
+.dress-selection.processing .dress-card:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.dress-selection.processing .dress-card:hover .drag-hint {
+    opacity: 0;
+}
+
+.dress-selection.processing .dress-card:hover .dress-image {
+    transform: none;
+}
+
+.dress-card.selected {
+    border-color: #c4baba;
+    box-shadow: var(--shadow-lg);
+}
+
+.dress-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition);
+    cursor: grab;
+    background: #fdf8f5;
+    border: 1px solid #e1e2dd;
+    box-sizing: border-box;
+}
+
+.dress-card:hover .dress-image {
+    transform: scale(1.05);
+}
+
+/* 드레스 선택/드래그 중에도 grab 커서 강제 유지 */
+.draggable,
+.draggable * {
+    cursor: grab !important;
+    pointer-events: auto;
+}
+
+.draggable:active,
+.draggable:active * {
+    cursor: grabbing !important;
+}
+
+/* 이미지의 브라우저 기본 드래그(🚫커서)를 비활성화 */
+.dress-image {
+    -webkit-user-drag: none;
+    pointer-events: auto;
+}
+
+.dress-category-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #b0ab99;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.selected-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #b0ab99;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: var(--shadow-md);
+    animation: popIn 0.3s ease;
+    z-index: 1;
+}
+
+.drag-hint {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+    pointer-events: none;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+/* 세로 슬라이더 */
+.vertical-slider {
+    position: relative;
+    width: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 10px 0;
+}
+
+.slider-arrow {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 2px solid #ad9f41;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #ad9f41;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.slider-arrow:hover {
+    background: #ad9f41;
+    color: white;
+    transform: scale(1.1);
+}
+
+.slider-arrow:active {
+    transform: scale(0.95);
+}
+
+.slider-track {
+    flex: 1;
+    width: 4px;
+    background: #e5e5e5;
+    border-radius: 2px;
+    position: relative;
+    min-height: 100px;
+}
+
+.slider-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #ad9f41;
+    border: 3px solid white;
+    border-radius: 50%;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    cursor: grab;
+    box-shadow: 0 2px 8px rgba(118, 108, 8, 0.3);
+    transition: all 0.2s ease;
+}
+
+.slider-handle:hover {
+    transform: translateX(-50%) scale(1.2);
+    box-shadow: 0 4px 12px rgba(44, 44, 44, 0.5);
+}
+
+.slider-handle:active {
+    cursor: grabbing;
+    transform: translateX(-50%) scale(1.1);
+}
+
+
+/* 모바일 버전 - 드레스 선택 영역 스타일 */
+@media (max-width: 768px) {
+    .dress-selection {
+        padding: 8px 0 0 !important;
+        height: 100%;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+    }
+
+    .category-buttons-wrapper {
+        gap: 8px;
+        margin-bottom: 12px;
+        margin-top: 8px;
+        padding: 0 8px;
+    }
+
+    .category-nav-button.prev,
+    .category-nav-button.next,
+    .category-nav-button {
+        display: none !important;
+    }
+
+    .category-buttons {
+        gap: 8px;
+        padding: 2px 0;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .category-button {
+        padding: 10px 16px;
+        font-size: 14px;
+        border-radius: 20px;
+        width: auto;
+        min-width: 100px;
+        text-align: center;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .dress-content-wrapper {
+        gap: 6px;
+        padding-right: 4px;
+        padding-left: 8px;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+        height: calc(100% - 50px);
+        max-height: calc(100vh - 250px);
+    }
+
+
+    /* 모바일 버전 - 드레스 그리드 레이아웃 (가로 스크롤) */
+    .dress-grid {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        justify-content: flex-start;
+        align-items: stretch;
+        width: max-content;
+        padding-bottom: 0;
+        padding-left: 8px;
+        padding-right: 8px;
+        margin-bottom: 0;
+    }
+
+    /* 모바일 버전 - 드레스 카드 크기 (화면 너비의 50% - 여백) */
+    .dress-grid .dress-card {
+        width: 200px !important;
+        min-width: 200px !important;
+        max-width: 200px !important;
+        padding-top: 130px !important;
+        margin-top: 0 !important;
+        flex-shrink: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        scroll-snap-align: start;
+    }
+
+    .dress-grid .dress-card .dress-image {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* 모바일 버전 - 카드가 1개일 때 뭉개지는 문제 해결 */
+    /* TODO: 카드가 1개일 때 크기 조정 필요시 width 값 수정 (현재: 200px) */
+    .dress-grid:has(.dress-card:only-child) {
+        justify-content: center;
+        width: 200px;
+        margin: 0 auto;
+    }
+
+    .vertical-slider {
+        display: none;
+    }
+
+    .dress-category-badge {
+        top: 6px;
+        left: 6px;
+        padding: 4px 8px;
+        font-size: 10px;
+        border-radius: 12px;
+    }
+
+    .selected-badge {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+        top: 6px;
+        right: 6px;
+    }
+
+    .drag-hint {
+        font-size: 10px;
+        padding: 4px 8px;
+        bottom: 6px;
+    }
+
+    .vertical-slider {
+        width: 28px;
+        padding: 6px 0;
+        gap: 4px;
+    }
+
+    .slider-arrow {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+    }
+
+    .slider-track {
+        width: 3px;
+    }
+
+    .slider-handle {
+        width: 14px;
+        height: 14px;
+        border-width: 2px;
+        transform: translateX(-50%);
+    }
+}
+
+/* ============================================
+   모바일 버전 (480px 이하) - 작은 모바일 기기
+   ============================================ */
+@media (max-width: 480px) {
+    .category-buttons-wrapper {
+        gap: 6px;
+        padding: 0 4px;
+    }
+
+    .category-nav-button.prev,
+    .category-nav-button.next,
+    .category-nav-button {
+        display: none !important;
+    }
+
+    .category-buttons {
+        gap: 6px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+    .category-button {
+        padding: 8px 12px;
+        font-size: 13px;
+        width: auto;
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+
+    .dress-card {
+        width: 200px;
+        min-width: 200px;
+        max-width: 200px;
+        padding-top: 130px;
+        border-radius: 10px;
+    }
+
+    .dress-grid {
+        gap: 10px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .dress-category-badge {
+        top: 4px;
+        left: 4px;
+        padding: 3px 6px;
+        font-size: 9px;
+    }
+
+    .selected-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        top: 4px;
+        right: 4px;
+    }
+
+    .vertical-slider {
+        width: 24px;
+    }
+
+    .slider-arrow {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+    }
+
+    .slider-handle {
+        width: 12px;
+        height: 12px;
+        transform: translateX(-50%);
+    }
+}
+
+/* Android - General fitting font adjustments */
+.android .fitting-container .dress-selection-overlay-text {
+    font-size: 13px;
+}
+
+.android .fitting-container .category-button {
+    font-size: 13px;
+}
+
+.android .fitting-container .custom-message {
+    font-size: 14px;
+}
+
+.android .fitting-container .dress-name {
+    font-size: 0.95rem;
+}
+
+.android .fitting-container .dress-category {
+    font-size: 0.78rem;
+}
+
+.android .fitting-container .drag-hint {
+    font-size: 11px;
+}

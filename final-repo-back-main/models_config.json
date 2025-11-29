@@ -1,0 +1,79 @@
+{
+  "models": [
+    {
+      "id": "gpt4o-gemini",
+      "name": "GPT-4o → Gemini 2.5 Flash V1",
+      "description": "GPT-4o가 생성한 프롬프트를 사용해 Gemini 2.5 Flash로 이미지를 합성합니다.",
+      "endpoint": "/api/gpt4o-gemini/compose",
+      "method": "POST",
+      "input_type": "dual_image",
+      "prompt_llm": "gpt-4o",
+      "inputs": [
+        {"name": "person_image", "label": "사람 이미지", "required": true},
+        {"name": "dress_image", "label": "드레스 이미지", "required": true}
+      ],
+      "category": "composition",
+      "requires_prompt_generation": true,
+      "prompt_generation_endpoint": "/api/gpt4o-gemini/generate-prompt"
+    },
+    {
+      "id": "gemini-compose",
+      "name": "Gemini 이미지 합성",
+      "description": "사람과 드레스를 합성하여 입은 모습 생성",
+      "endpoint": "/api/compose-dress",
+      "method": "POST",
+      "input_type": "dual_image",
+      "prompt_llm": "gemini",
+      "inputs": [
+        {"name": "person_image", "label": "사람 이미지", "required": true},
+        {"name": "dress_image", "label": "드레스 이미지", "required": true}
+      ],
+      "category": "composition",
+      "prompt": "IMPORTANT: You must preserve the person's identity completely.\n\nTask: Apply ONLY the dress from the first image onto the person from the second image.\n\nSTRICT REQUIREMENTS:\n1. PRESERVE EXACTLY: The person's face, facial features, skin tone, hair, and body proportions\n2. PRESERVE EXACTLY: The person's pose, stance, and body position\n3. PRESERVE EXACTLY: The background and lighting from the person's image\n4. CHANGE ONLY: Replace the person's clothing with the dress from the first image\n5. The dress should fit naturally on the person's body shape\n6. Maintain realistic shadows and fabric draping on the dress\n7. Keep the person's hands, arms, legs exactly as they are in the original\n\nDO NOT change the person's appearance, face, body type, or any physical features.\nONLY apply the dress design, color, and style onto the existing person."
+    },
+    {
+      "id": "enhanced-compose",
+      "name": "의상합성 고품화",
+      "description": "7개 모델을 통합한 고품화 의상 합성 파이프라인 (SegFormer B0 + RTMPose-s + HR-VITON + 구두 생성 + TPS Warp + Real-ESRGAN + Color Harmonization)",
+      "endpoint": "/api/compose-enhanced",
+      "method": "POST",
+      "input_type": "dual_image",
+      "prompt_llm": "",
+      "inputs": [
+        {"name": "person_image", "label": "사람 이미지", "required": true},
+        {"name": "dress_image", "label": "드레스 이미지", "required": true}
+      ],
+      "category": "composition",
+      "parameters": {
+        "generate_shoes": {
+          "type": "checkbox",
+          "label": "구두 생성",
+          "default": false,
+          "required": false
+        },
+        "shoes_prompt": {
+          "type": "text",
+          "label": "구두 생성 프롬프트",
+          "placeholder": "예: elegant white wedding shoes",
+          "default": "",
+          "required": false
+        }
+      }
+    },
+    {
+      "id": "xai-gemini-unified",
+      "name": "XAI + Gemini 2.5 Flash V1",
+      "description": "X.AI 프롬프트 생성과 Gemini 2.5 Flash 이미지 합성을 통합한 단일 파이프라인",
+      "endpoint": "/api/tryon/unified",
+      "method": "POST",
+      "input_type": "dual_image",
+      "inputs": [
+        {"name": "person_image", "label": "사람 이미지", "required": true},
+        {"name": "dress_image", "label": "드레스 이미지", "required": true},
+        {"name": "background_image", "label": "배경 이미지", "required": true}
+      ],
+      "category": "composition"
+    }
+  ]
+}
+

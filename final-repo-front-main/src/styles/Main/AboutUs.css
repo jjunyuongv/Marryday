@@ -1,0 +1,405 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Great+Vibes&family=Dancing+Script:wght@400;500;600;700&display=swap');
+
+.about-us-section {
+    width: 100%;
+    min-height: 370vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #ffffff;
+    padding: 0 20px 50px 20px;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 100px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+    position: relative;
+    --about-us-description-shift: 0;
+}
+
+.about-us-section.visible {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.about-us-title {
+    font-size: 72px;
+    font-weight: 400;
+    font-family: 'Playfair Display', serif;
+    color: var(--text-dark);
+    text-align: center;
+    margin: 0 0 60px 0;
+    letter-spacing: 3px;
+    width: 100%;
+    max-width: 1400px;
+    font-style: italic;
+    cursor: default;
+}
+
+.about-us-content-wrapper {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    gap: 5px;
+    padding: 0 10px;
+    align-items: flex-start;
+}
+
+.about-us-content-wrapper .left-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-right: 40px;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
+}
+
+.about-us-text-content {
+    display: flex;
+    flex-direction: column;
+    gap: 300px;
+    padding: 300px 0 0 0;
+    width: 100%;
+    flex: 1;
+    justify-content: flex-start;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.about-us-text-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    min-height: 600px;
+    width: 100%;
+    transform: scale(0.8) translateY(50px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.8s ease-out, opacity 0.8s ease-out, visibility 0.8s ease-out;
+}
+
+.about-us-text-item.visible {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* 마지막 텍스트 아이템 고정 - 더 아래 스크롤해도 유지 */
+.about-us-text-content {
+    position: relative;
+}
+
+.about-us-text-item:last-child.visible {
+    position: sticky;
+    top: 400px;
+    z-index: 10;
+    align-self: center;
+    margin-top: 200px;
+}
+
+.about-us-main-text {
+    font-size: 48px;
+    font-weight: 700;
+    font-family: 'Gowun Batang', 'Noto Sans KR', serif;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.4;
+    max-width: 600px;
+    text-align: center;
+    word-break: keep-all;
+    word-wrap: break-word;
+    cursor: default;
+}
+
+.about-us-description {
+    font-size: 18px;
+    font-weight: 400;
+    font-family: 'Gowun Batang', 'Noto Sans KR', serif;
+    color: var(--text-light);
+    margin: 0;
+    line-height: 2;
+    max-width: 550px;
+    text-align: center;
+    word-break: keep-all;
+    word-wrap: break-word;
+    hyphens: auto;
+    position: relative;
+    left: calc(var(--about-us-description-shift) * -1);
+    width: 100%;
+    max-width: none;
+    padding-left: 0;
+    padding-right: 1.5rem;
+    margin: 0;
+    box-sizing: border-box;
+    cursor: default;
+}
+
+/* From Uiverse.io by Gaurav-WebDev */
+.about-us-navigate-button {
+    height: 50px;
+    width: 250px;
+    position: relative;
+    background-color: transparent;
+    cursor: pointer;
+    border: 1px solid #252525;
+    overflow: hidden;
+    border-radius: 30px;
+    color: #333;
+    transition: all 0.5s ease-in-out;
+    margin-top: 20px;
+    font-family: 'Gowun Batang', 'Noto Sans KR', sans-serif;
+    align-self: flex-end;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.about-us-navigate-button .btn-txt {
+    z-index: 1;
+    font-weight: 800;
+    letter-spacing: 4px;
+}
+
+.about-us-navigate-button.type1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: all 0.5s ease-in-out;
+    background-color: #333;
+    border-radius: 30px;
+    visibility: hidden;
+    height: 10px;
+    width: 10px;
+    z-index: -1;
+}
+
+.about-us-navigate-button:hover {
+
+    color: #fff;
+    border: none;
+}
+
+.about-us-navigate-button.type1:hover::after {
+    visibility: visible;
+    transform: scale(100) translateX(2px);
+}
+
+.about-us-content-wrapper .right-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 200px;
+    align-self: flex-start;
+    height: fit-content;
+}
+
+.about-us-image-container {
+    width: 90%;
+    height: 100%;
+    min-height: 650px;
+    background: rgba(255, 255, 255, 0.5);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    margin-left: 150px;
+}
+
+.about-us-rotating-image {
+    width: 90%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.about-us-rotating-image.fade-in {
+    opacity: 1;
+}
+
+.about-us-rotating-image.fade-out {
+    opacity: 0;
+}
+
+@media (max-width: 1024px) {
+    .about-us-content-wrapper {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .about-us-content-wrapper .left-container {
+        min-height: auto;
+        padding-right: 0;
+    }
+
+    .about-us-content-wrapper .right-container {
+        position: relative;
+        top: 0;
+        min-height: 500px;
+    }
+
+    .about-us-main-text {
+        font-size: 36px;
+    }
+
+    .about-us-description {
+        font-size: 16px;
+    }
+
+    .about-us-title {
+        font-size: 56px;
+    }
+
+    .about-us-image-container {
+        min-height: 500px;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-us-section {
+        min-height: auto;
+        padding-top: 60px;
+        padding-bottom: 150px;
+        transform: none;
+        margin-bottom: 0;
+        --about-us-description-shift: 120px;
+        margin-top: 120px;
+    }
+
+    .about-us-title {
+        font-size: 60px;
+    }
+
+    .about-us-content-wrapper {
+        gap: 4px;
+    }
+
+    .about-us-main-text {
+        font-size: 28px;
+        text-align: center;
+        align-self: center;
+    }
+
+    .about-us-description {
+        font-size: 15px;
+        text-align: center;
+        align-self: center;
+        left: 0;
+        width: 100%;
+        max-width: 100%;
+        padding: 0 1.5rem;
+        margin: 0;
+    }
+
+    .about-us-text-content {
+        gap: 32px;
+        padding: 40px 0 20px;
+    }
+
+    .about-us-text-item {
+        min-height: auto;
+        align-items: center;
+        text-align: center;
+    }
+
+    .about-us-text-item:last-child.visible {
+        position: static;
+        margin-top: 0;
+    }
+
+    .about-us-text-item .about-us-navigate-button {
+        width: 180px;
+        height: 42px;
+        font-size: 0.8rem;
+        margin-top: -10px;
+        margin-left: 0;
+        align-self: center;
+    }
+
+    .about-us-text-item.mobile-hidden {
+        display: none !important;
+    }
+
+    .about-us-text-item.mobile-active {
+        display: flex;
+    }
+
+    .about-us-slider-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 8px;
+        margin-left: 0;
+        align-self: center;
+    }
+
+    .about-us-text-item:nth-child(2) .about-us-slider-controls {
+        margin-top: -16px;
+    }
+
+    .about-us-slider-button {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid #333;
+        background: transparent;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .about-us-slider-button:hover {
+        background: #333;
+        color: #fff;
+    }
+
+    .about-us-slider-indicator {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .about-us-content-wrapper .right-container {
+        display: none;
+    }
+
+    .about-us-image-container {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-us-title {
+        font-size: 48px;
+    }
+
+    .about-us-main-text {
+        font-size: 24px;
+    }
+
+    .about-us-description {
+        font-size: 14px;
+    }
+
+    .about-us-image-container {
+        min-height: 300px;
+    }
+}
