@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react'
 import { HiQuestionMarkCircle } from 'react-icons/hi'
-import Modal from '../../components/Modal'
-import ReviewModal from '../../components/ReviewModal'
-import '../../styles/Analysis/BodyTypeFitting.css'
+import Modal from '../../components/Modal/Modal'
+import ReviewModal from '../../components/ReviewModal/ReviewModal'
+import './BodyTypeFitting.css'
 import { analyzeBody, validatePerson } from '../../utils/api'
 import { isReviewCompleted } from '../../utils/cookies'
 
@@ -296,11 +296,11 @@ const BodyAnalysis = ({ onNavigateToFittingWithCategory }) => {
 
             // 동물 감지 에러인 경우
             if (error.response?.data?.is_animal) {
-                errorMessage = '인물사진을 업로드해주세요.'
+                errorMessage = '인물사진을 업로드해주세요'
             }
             // 전신 랜드마크가 없는 경우 (얼굴만 있는 경우)
             else if (error.response?.data?.error === 'No pose detected' || errorMessage.includes('전신')) {
-                errorMessage = '전신 사진을 넣어주세요.'
+                errorMessage = '전신 사진을 넣어주세요'
             }
 
             setModalMessage(errorMessage)

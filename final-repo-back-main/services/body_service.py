@@ -1,13 +1,289 @@
-"""체형 분석 서비스"""
+﻿"""체형 분석 서비스"""
 import os
 from typing import Dict, List, Optional
 from PIL import Image
 from google import genai
+from pathlib import Path
 
 from services.body_analysis_database import (
     get_multiple_body_definitions,
     format_body_type_info_for_prompt
 )
+
+
+def load_body_line_definitions() -> Dict[str, str]:
+    """
+    라인별 체형 정의를 DB에서 읽어와서 딕셔너리로 반환
+    DB에서 읽기 실패 시 파일에서 읽기 (대체)
+    
+    Returns:
+        Dict[str, str]: {라인명: 정의 텍스트}
+    """
+    from services.database import get_db_connection
+    
+    # 우선 DB에서 읽기
+    connection = get_db_connection()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                # body_type_definitions 테이블에서 라인별 정의 조회
+                cursor.execute("""
+                    SELECT body_feature, definition_text 
+                    FROM body_type_definitions
+                    WHERE body_feature IN ('A라인', 'H라인', 'X라인', 'O라인')
+                    AND definition_text IS NOT NULL
+                    ORDER BY 
+                        CASE body_feature
+                            WHEN 'A라인' THEN 1
+                            WHEN 'H라인' THEN 2
+                            WHEN 'X라인' THEN 3
+                            WHEN 'O라인' THEN 4
+                        END
+                """)
+                results = cursor.fetchall()
+                
+                if results:
+                    definitions = {}
+                    for row in results:
+                        definitions[row['body_feature']] = row['definition_text']
+                    
+                    print(f"[INFO] 라인별 체형 정의 로드 완료 (DB): {list(definitions.keys())}")
+                    for line_name, definition in definitions.items():
+                        print(f"[INFO] - {line_name}: {len(definition)}자")
+                    
+                    return definitions
+                    
+        except Exception as e:
+            print(f"[WARN] 라인별 체형 정의 DB 조회 실패: {e}")
+            import traceback
+            print(traceback.format_exc())
+        finally:
+            connection.close()
+    
+    # DB 실패 시 파일에서 읽기 (대체)
+    print("[INFO] DB에서 읽기 실패, 파일에서 읽기 시도...")
+    base_dir = Path(__file__).parent.parent
+    definition_file = base_dir / "body_line_definitions.md"
+    
+    if not definition_file.exists():
+        print(f"[WARN] 라인별 체형 정의 파일을 찾을 수 없습니다: {definition_file}")
+        return {}
+    
+    try:
+        with open(definition_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # 마크다운 파싱하여 라인별로 분리
+        definitions = {}
+        current_line = None
+        current_text = []
+        
+        for line in content.split('\n'):
+            # 라인 헤더 감지 (## X 라인, ## H 라인 등)
+            if line.startswith('## '):
+                # 이전 라인 저장
+                if current_line and current_text:
+                    definitions[current_line] = '\n'.join(current_text).strip()
+                
+                # 새 라인 시작
+                line_name = line.replace('## ', '').strip()
+                # "X 라인 (X-Line) – 모래시계형" -> "X라인"
+                if '라인' in line_name:
+                    parts = line_name.split('라인')
+                    if parts:
+                        line_char = parts[0].strip()
+                        current_line = line_char + '라인'
+                    else:
+                        current_line = line_name
+                else:
+                    current_line = line_name
+                current_text = []
+            elif line.startswith('---'):
+                # 구분선 무시
+                continue
+            elif current_line:
+                # 빈 줄이 아닌 경우 추가
+                current_text.append(line)
+        
+        # 마지막 라인 저장
+        if current_line and current_text:
+            definitions[current_line] = '\n'.join(current_text).strip()
+        
+        print(f"[INFO] 라인별 체형 정의 로드 완료 (파일): {list(definitions.keys())}")
+        for line_name, definition in definitions.items():
+            print(f"[INFO] - {line_name}: {len(definition)}자")
+        
+        return definitions
+        
+    except Exception as e:
+        print(f"[WARN] 라인별 체형 정의 파일 읽기 실패: {e}")
+        import traceback
+        print(traceback.format_exc())
+        return {}
+
+
+def format_body_line_definitions_for_prompt(definitions: Dict[str, str]) -> str:
+    """
+    라인별 정의를 Gemini 프롬프트에 포함할 형식으로 변환
+    
+    Args:
+        definitions: load_body_line_definitions()의 반환값
+    
+    Returns:
+        str: 프롬프트에 포함할 텍스트
+    """
+    if not definitions:
+        return ""
+    
+    parts = []
+    parts.append("**라인별 체형 정의** (참고용으로만 사용, 대체 정의가 있으면 대체 정의를 우선):")
+    parts.append("")
+    
+    for line_name, definition in definitions.items():
+        parts.append(f"### {line_name}")
+        parts.append(definition)
+        parts.append("")
+    
+    return "\n".join(parts)
+
+
+async def classify_body_line_with_gemini(
+    image: Image.Image,
+    measurements: Dict,
+    body_line_definitions: Dict[str, str]
+) -> Dict:
+    """
+    Gemini API로 체형 라인 분류 (라인별 정의 포함)
+    
+    Args:
+        image: 사용자 이미지
+        measurements: MediaPipe 측정값
+        body_line_definitions: 라인별 체형 정의 (파일에서 읽은 것 또는 DB에서)
+    
+    Returns:
+        Dict: {"body_line": "A라인", "confidence": "high/medium/low"}
+    """
+    try:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            print("[Gemini] GEMINI_API_KEY가 설정되지 않았습니다.")
+            return {"body_line": "H라인", "confidence": "low"}
+        
+        client = genai.Client(api_key=api_key)
+        
+        # 라인별 정의를 프롬프트 형식으로 변환
+        line_definitions_text = format_body_line_definitions_for_prompt(body_line_definitions)
+        
+        # 측정값 기반 가능성 분석 (참고용)
+        shoulder_hip_ratio = measurements.get('shoulder_hip_ratio', 1.0)
+        waist_hip_ratio = measurements.get('waist_hip_ratio', 1.0)
+        waist_shoulder_ratio = measurements.get('waist_shoulder_ratio', 1.0)
+        
+        prompt = f"""
+당신은 체형 라인 분류 전문가입니다.
+
+**MediaPipe 기반 측정값**:
+- 어깨/엉덩이 비율: {shoulder_hip_ratio:.2f}
+- 허리/어깨 비율: {waist_shoulder_ratio:.2f}
+- 허리/엉덩이 비율: {waist_hip_ratio:.2f}
+
+**⚠️ 매우 중요: 모든 라인을 동등하게 비교하여 판단하세요. H라인에만 편향되지 마세요.**
+
+---
+
+{line_definitions_text}
+
+---
+
+**판별 원칙 (매우 중요 – 모든 라인을 동등하게 비교)**
+
+**H라인 판별 (엄격한 기준 – 정말 일자 체형일 때만)**  
+- 어깨·허리·골반 폭이 서로 거의 같아야 합니다 (**차이가 8% 이내일 때만 H라인으로 판단**).  
+- 골반/엉덩이/허벅지 쪽에 특별히 넓어 보이는 부분이 없어야 합니다.  
+- 허리선이 거의 일자여야 합니다 (살짝만 들어가거나 아예 일자).  
+- 전체적으로 직사각형형/일자형 느낌이어야 합니다.  
+- **사진에서 어깨는 카메라 각도 때문에 실제보다 넓게 나오는 경우가 많으므로,  
+  어깨가 넓어 보인다는 이유만으로 H라인을 선택하지 마세요.**  
+- **하체(골반/엉덩이/허벅지)가 조금이라도 더 넓어 보이거나, 허리가 눈에 띄게 들어가 보이면 H라인이 아니라 다른 라인(A/X/O)을 우선 고려하세요.**  
+- **이 기준들이 모두 명확하게 만족될 때만 H라인으로 판별하세요.**
+
+**A라인 판별 (하체 발달형에 중점 – 어깨가 약간 넓어도 괜찮음)**  
+- 하체(골반/엉덩이/허벅지)가 상체보다 넓거나 볼륨 있어 보이는지 확인하세요.  
+- 실루엣이 위→아래로 갈수록 넓어지는 형태인가?  
+- 골반/엉덩이/허벅지 폭이 상체 폭보다 넓거나, 하체에 시선이 더 많이 가는가?  
+- **어깨가 다소 넓어 보이더라도, 골반/엉덩이/허벅지 쪽이 더 넓거나 볼륨 있어 보이면 A라인을 선택하세요.**  
+- **사진에서 어깨는 기본적으로 넓게 나오는 경우가 많으므로, “어깨가 좁게 나와야만 A라인”이라고 생각하지 마세요. 하체가 충분히 발달되어 보이면 A라인 후보입니다.**  
+- **H라인과 A라인이 애매하게 느껴질 경우, 하체가 조금이라도 넓어 보이면 H라인이 아니라 A라인을 우선 선택하세요.**
+
+**O라인 판별**  
+- 허리선이 모호하고 둥근 실루엣인가?  
+- 허리 둘레가 가슴/엉덩이와 거의 비슷하거나 더 큰가?  
+- 복부·허리 주변에 볼륨이 많이 모여 있는가?  
+
+**X라인 판별**  
+- 어깨와 골반 너비가 비슷한가?  
+- 허리가 가슴/엉덩이보다 확실히 작은가? (적당히 잘록)  
+- 정면에서 보면 "X"자 형태인가?  
+- **위 조건들이 모두 만족될 때만 X라인입니다.**
+
+**최종 판별 원칙**  
+- **어깨 폭만 보지 말고, 하체(골반/엉덩이/허벅지)의 볼륨과 실루엣까지 모두 비교하여 가장 적합한 라인을 선택하세요.**  
+- **H라인은 “정말 일자에 가까운 체형”일 때만 선택하고, 애매하면 A/X/O 라인을 우선 고려하세요.**  
+- 이미지 직접 관찰이 가장 중요합니다.  
+- 측정값은 참고용일 뿐입니다.
+
+**응답 형식**:
+다음 형식으로만 응답하세요:
+```
+BODY_LINE: [A라인|H라인|X라인|O라인]
+CONFIDENCE: [high|medium|low]
+```
+
+예시:
+```
+BODY_LINE: H라인
+CONFIDENCE: high
+```
+
+추가 설명은 쓰지 마세요.
+"""
+        
+        # Gemini API 호출
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-image",
+            contents=[image, prompt]
+        )
+        
+        # 응답 파싱
+        response_text = response.text.strip()
+        print(f"[Gemini 라인 분류] 응답: {response_text[:200]}")
+        
+        # BODY_LINE과 CONFIDENCE 추출
+        body_line = "H라인"  # 기본값
+        confidence = "low"  # 기본값
+        
+        for line in response_text.split('\n'):
+            if 'BODY_LINE:' in line.upper():
+                line_value = line.split(':')[1].strip() if ':' in line else ""
+                if line_value in ['A라인', 'H라인', 'X라인', 'O라인']:
+                    body_line = line_value
+            elif 'CONFIDENCE:' in line.upper():
+                conf_value = line.split(':')[1].strip().lower() if ':' in line else ""
+                if conf_value in ['high', 'medium', 'low']:
+                    confidence = conf_value
+        
+        print(f"[Gemini 라인 분류] 최종 결과: {body_line} (신뢰도: {confidence})")
+        
+        return {
+            "body_line": body_line,
+            "confidence": confidence
+        }
+        
+    except Exception as e:
+        print(f"Gemini 라인 분류 오류: {e}")
+        import traceback
+        print(traceback.format_exc())
+        return {"body_line": "H라인", "confidence": "low"}
 
 
 def determine_body_features(body_type: Dict, bmi: float, height: float, measurements: Dict) -> List[str]:

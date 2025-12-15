@@ -76,7 +76,7 @@
 .general-fitting-title {
     font-size: 32px;
     font-weight: 700;
-    font-family: 'Orbit', 'Static', sans-serif;
+    font-family: 'GowoonDodum', sans-serif;
     color: #2c2c2c;
     text-align: left;
     margin: 0;
@@ -435,6 +435,62 @@ body.dragging-dress * {
     margin-bottom: 32px;
 }
 
+
+/* 노트북 화면 스타일 (769px ~ 1440px) */
+@media (min-width: 48.0625rem) and (max-width: 90rem) {
+    .fitting-container {
+        max-width: 1600px;
+        transform: scale(0.92);
+        transform-origin: top center;
+        padding-bottom: 0 !important;
+        margin-bottom: -20px !important;
+        height: calc(100vh - 150px) !important;
+    }
+
+    .general-fitting-title {
+        font-size: 28px !important;
+    }
+
+    .tab-guide-text {
+        font-size: 15px !important;
+    }
+
+    .content-wrapper {
+        padding: 35px 50px 0 !important;
+        padding-bottom: 0 !important;
+        margin-bottom: -20px !important;
+    }
+
+    .left-container {
+        margin-left: 30px !important;
+        margin-right: -30px !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .right-container {
+        height: 580px !important;
+        min-height: 580px !important;
+        max-height: 580px !important;
+        margin-bottom: -20px !important;
+        padding-bottom: 0 !important;
+    }
+
+    .general-fitting-header {
+        margin-bottom: 5px !important;
+        padding-bottom: 0 !important;
+    }
+
+    .fitting-container .content-wrapper {
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+    }
+
+    .fitting-container .right-container {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+}
 
 @media (max-width: 1024px) {
     .fitting-container {

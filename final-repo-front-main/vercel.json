@@ -27,6 +27,10 @@
             "destination": "http://marryday.kro.kr/fit/:path*"
         },
         {
+            "source": "/tryon/:path*",
+            "destination": "http://marryday.kro.kr/tryon/:path*"
+        },
+        {
             "source": "/visitor/:path*",
             "destination": "http://marryday.kro.kr/visitor/:path*"
         },

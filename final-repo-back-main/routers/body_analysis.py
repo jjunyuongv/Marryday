@@ -2,12 +2,18 @@
 import time
 import io
 import traceback
+import math
 from fastapi import APIRouter, File, UploadFile, Form, Query
 from fastapi.responses import JSONResponse
-from PIL import Image
+from PIL import Image, ImageOps
 
 from core.model_loader import get_body_analysis_service, get_image_classifier_service
-from services.body_service import determine_body_features, analyze_body_with_gemini
+from services.body_service import (
+    determine_body_features, 
+    analyze_body_with_gemini,
+    load_body_line_definitions,
+    classify_body_line_with_gemini
+)
 from services.database import get_db_connection
 from services.body_analysis_database import save_body_analysis_result, get_body_logs, get_body_logs_count
 import numpy as np
@@ -23,9 +29,13 @@ async def pose_landmark_visualizer(
     """
     포즈 랜드마크 시각화용 API (테스트 페이지용)
     
-    이미지를 업로드하면 MediaPipe Pose 랜드마크를 추출하고 방향 자동 보정을 적용합니다.
+    이미지를 업로드하면 MediaPipe Pose 랜드마크를 추출합니다.
+    EXIF orientation 정보를 자동으로 적용하여 핸드폰으로 찍은 사진도 올바른 방향으로 표시됩니다.
     """
     try:
+        import base64
+        from io import BytesIO
+        
         # 체형 분석 서비스 확인
         body_analysis_service = get_body_analysis_service()
         if not body_analysis_service or not body_analysis_service.is_initialized:
@@ -35,12 +45,14 @@ async def pose_landmark_visualizer(
                 "message": "체형 분석 서비스가 초기화되지 않았습니다."
             }, status_code=500)
         
-        # 이미지 읽기
+        # 이미지 읽기 및 EXIF orientation 자동 적용
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB")
+        # EXIF orientation 정보에 따라 이미지 자동 회전
+        image = ImageOps.exif_transpose(image)
         
-        # 랜드마크 추출 (시각화용이므로 원본 이미지 방향 그대로 표시)
-        landmarks = body_analysis_service.extract_landmarks(image, auto_correct_orientation=False)
+        # 랜드마크 추출
+        landmarks = body_analysis_service.pose_landmark_service.extract_landmarks(image)
         
         if landmarks is None or len(landmarks) == 0:
             return JSONResponse({
@@ -72,6 +84,12 @@ async def pose_landmark_visualizer(
         else:
             body_height_diff = 0
         
+        # EXIF 적용된 이미지를 base64로 인코딩
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        corrected_image_url = f"data:image/png;base64,{image_base64}"
+        
         return JSONResponse({
             "success": True,
             "landmarks": landmarks,
@@ -80,6 +98,7 @@ async def pose_landmark_visualizer(
                 "width": image_width,
                 "height": image_height
             },
+            "corrected_image": corrected_image_url,  # EXIF 적용된 이미지
             "body_height_diff": float(body_height_diff),
             "message": "랜드마크 추출 완료"
         })
@@ -103,9 +122,11 @@ async def validate_person(
     체형분석에서는 전신 랜드마크가 필수이므로, 전신 랜드마크가 없으면 차단합니다.
     """
     try:
-        # 이미지 읽기
+        # 이미지 읽기 및 EXIF orientation 자동 적용
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB")
+        # EXIF orientation 정보에 따라 이미지 자동 회전
+        image = ImageOps.exif_transpose(image)
         
         classification_result = None
         is_animal_detected = False
@@ -183,29 +204,38 @@ async def validate_person(
             lower_body_ids = [23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
             upper_body_ids = [11, 12]  # 어깨
             
-            # 하체 랜드마크가 감지되었는지 확인
+            # 하체 랜드마크가 감지되었는지 확인 및 좌표 저장
             lower_body_detected = False
-            upper_body_y = None
-            lower_body_y = None
+            upper_shoulder = None  # 상체 어깨 좌표 (x, y)
+            lower_ankle = None     # 하체 발목 좌표 (x, y) - 발목 우선, 없으면 하체 중 가장 아래
+            lower_body_fallback = None  # 하체 중 가장 아래 (발목이 없을 때 사용)
+            ankle_ids = [27, 28]   # 왼쪽 발목, 오른쪽 발목
             
             for landmark in landmarks:
                 landmark_id = landmark.get("id")
                 visibility = landmark.get("visibility", 0)
+                x = landmark.get("x", 0)
                 y = landmark.get("y", 0)
                 
                 # visibility가 0.3 이상이면 감지된 것으로 판단
                 if visibility >= 0.3:
                     if landmark_id in upper_body_ids:
-                        # 어깨의 y 좌표 (상체)
-                        if upper_body_y is None or y < upper_body_y:
-                            upper_body_y = y
+                        # 어깨 좌표 저장 (y가 작은 것, 즉 위쪽)
+                        if upper_shoulder is None or y < upper_shoulder[1]:
+                            upper_shoulder = (x, y)
                     
                     if landmark_id in lower_body_ids:
                         # 하체 랜드마크 감지
                         lower_body_detected = True
-                        # 하체의 y 좌표 (하체)
-                        if lower_body_y is None or y > lower_body_y:
-                            lower_body_y = y
+                        
+                        # 발목이 있으면 발목 우선 사용
+                        if landmark_id in ankle_ids:
+                            if lower_ankle is None or y > lower_ankle[1]:
+                                lower_ankle = (x, y)
+                        else:
+                            # 하체 중 가장 아래 좌표 저장 (발목이 없을 때 대비)
+                            if lower_body_fallback is None or y > lower_body_fallback[1]:
+                                lower_body_fallback = (x, y)
             
             # 하체 랜드마크가 감지되지 않으면 차단
             if not lower_body_detected:
@@ -221,13 +251,35 @@ async def validate_person(
                     "message": "전신 사진을 넣어주세요."
                 })
             
-            # 어깨와 하체의 y 좌표 차이로 전신 여부 추가 확인
-            # 전신 사진이라면 하체가 어깨보다 아래에 있어야 함
-            if upper_body_y is not None and lower_body_y is not None:
-                body_height_ratio = lower_body_y - upper_body_y
-                # y 좌표 차이가 0.2 미만이면 전신이 아닌 것으로 판단 (너무 작은 차이)
-                if body_height_ratio < 0.2:
-                    print(f"❌ 전신 비율 부족 (상체-하체 차이: {body_height_ratio:.3f}) - 차단")
+            # 발목이 없으면 하체 중 가장 아래 좌표 사용
+            if lower_ankle is None:
+                lower_ankle = lower_body_fallback
+            
+            # 하체 좌표를 찾을 수 없으면 차단
+            if lower_ankle is None:
+                print(f"❌ 하체 좌표를 찾을 수 없음 - 차단")
+                return JSONResponse({
+                    "success": True,
+                    "is_person": False,
+                    "is_face_only": True,
+                    "face_detected": False,
+                    "landmarks_count": len(landmarks) if landmarks else 0,
+                    "detection_type": None,
+                    "classification_result": classification_result[:3] if classification_result else None,
+                    "message": "전신 사진을 넣어주세요."
+                })
+            
+            # 어깨와 하체(발목) 사이의 실제 거리로 전신 여부 확인
+            # 전신 사진이라면 상체와 하체 사이의 거리가 충분해야 함
+            if upper_shoulder is not None and lower_ankle is not None:
+                # 유클리드 거리 계산 (실제 거리)
+                dx = lower_ankle[0] - upper_shoulder[0]
+                dy = lower_ankle[1] - upper_shoulder[1]
+                body_height_distance = math.sqrt(dx**2 + dy**2)
+                
+                # 실제 거리가 0.3 미만이면 전신이 아닌 것으로 판단
+                if body_height_distance < 0.3:
+                    print(f"❌ 전신 비율 부족 (거리: {body_height_distance:.3f}) - 차단")
                     return JSONResponse({
                         "success": True,
                         "is_person": False,
@@ -300,9 +352,11 @@ async def analyze_body(
                 "message": "체형 분석 서비스가 초기화되지 않았습니다. 모델 파일을 확인해주세요."
             }, status_code=500)
         
-        # 이미지 읽기
+        # 이미지 읽기 및 EXIF orientation 자동 적용
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB")
+        # EXIF orientation 정보에 따라 이미지 자동 회전
+        image = ImageOps.exif_transpose(image)
         
         # 0. 동물 감지 검증 (validatePerson과 동일한 방식)
         is_animal_detected = False
@@ -353,10 +407,34 @@ async def analyze_body(
         # 2. 체형 측정값 계산
         measurements = body_analysis_service.calculate_measurements(landmarks)
         
-        # 3. 체형 타입 분류 (랜드마크 기반)
-        body_type = body_analysis_service.classify_body_type(measurements)
+        # 3. 라인별 체형 정의 로드 (DB에서)
+        body_line_definitions = load_body_line_definitions()
         
-        # 4. BMI 계산 및 체형 특징 판단
+        # 4. Gemini API로 라인 판별 (DB 정의 + 랜드마크 정보 활용)
+        gemini_line_result = None
+        try:
+            gemini_line_result = await classify_body_line_with_gemini(
+                image, measurements, body_line_definitions
+            )
+            print(f"[라인 판별] Gemini 결과: {gemini_line_result}")
+        except Exception as e:
+            print(f"[WARN] Gemini 라인 판별 실패: {e}")
+            import traceback
+            print(traceback.format_exc())
+        
+        # Gemini 라인 판별 결과가 있으면 사용, 없으면 랜드마크 기반 분류 사용
+        if gemini_line_result and gemini_line_result.get('body_line'):
+            body_type = {
+                'type': gemini_line_result['body_line'],
+                'confidence': gemini_line_result.get('confidence', 'medium'),
+                'description': f"{gemini_line_result['body_line']} 체형 (Gemini 판별)"
+            }
+            print(f"[라인 판별] Gemini 결과 사용: {body_type['type']}")
+        else:
+            # 랜드마크 기반 분류 (폴백)
+            body_type = body_analysis_service.classify_body_type(measurements)
+            print(f"[라인 판별] 랜드마크 기반 분류 사용: {body_type['type']}")
+        # 5. BMI 계산 및 체형 특징 판단
         bmi = None
         body_features = []
         if height and weight:
@@ -365,7 +443,7 @@ async def analyze_body(
             bmi = weight / (height_m ** 2)
             body_features = determine_body_features(body_type, bmi, height, measurements)
         
-        # 5. Gemini API로 상세 분석
+        # 6. Gemini API로 상세 분석
         gemini_analysis = None
         gemini_analysis_text = None
         try:
@@ -377,10 +455,10 @@ async def analyze_body(
         except Exception as e:
             print(f"Gemini 분석 실패: {e}")
         
-        # 6. 처리 시간 계산
+        # 7. 처리 시간 계산
         run_time = time.time() - start_time
         
-        # 7. 분석 결과를 DB에 저장
+        # 8. 분석 결과를 DB에 저장
         try:
             # 체형 특징을 문자열로 변환 (쉼표로 구분)
             characteristic_str = ', '.join(body_features) if body_features else None
@@ -410,9 +488,13 @@ async def analyze_body(
             "success": True,
             "body_analysis": {
                 "body_type": body_type.get('type', 'unknown'),
+                "body_type_confidence": body_type.get('confidence', 'medium'),
+                "body_type_description": body_type.get('description', ''),
                 "body_features": body_features,
-                "measurements": measurements
+                "measurements": measurements,
+                "line_classification_method": "gemini" if gemini_line_result and gemini_line_result.get('body_line') else "landmark"
             },
+            "gemini_line_classification": gemini_line_result,
             "gemini_analysis": gemini_analysis,
             "run_time": run_time,
             "message": "체형 분석이 완료되었습니다."
@@ -571,11 +653,13 @@ async def get_pose_landmarks(
     기존 랜드마크 추출 방식과 동일하게 body_analysis_service.extract_landmarks()를 사용합니다.
     """
     try:
-        # 이미지 읽기
+        # 이미지 읽기 및 EXIF orientation 자동 적용
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB")
+        # EXIF orientation 정보에 따라 이미지 자동 회전
+        image = ImageOps.exif_transpose(image)
         
-        # 포즈 랜드마크 추출 (기존과 동일한 방식)
+        # 포즈 랜드마크 추출
         body_analysis_service = get_body_analysis_service()
         if not body_analysis_service or not body_analysis_service.is_initialized:
             return JSONResponse({

@@ -1,13 +1,19 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Lottie from 'lottie-react'
 import { MdOutlineDownload } from 'react-icons/md'
-import Modal from '../../components/Modal'
-import ReviewModal from '../../components/ReviewModal'
-import { autoMatchImageV4, getDresses, applyImageFilter, validatePerson } from '../../utils/api'
+import Modal from '../../components/Modal/Modal'
+import ReviewModal from '../../components/ReviewModal/ReviewModal'
+import ImageSelectionModal from '../../components/ImageSelectionModal/ImageSelectionModal'
+import { autoMatchImageV5V5, getDresses, applyImageFilter, validatePerson } from '../../utils/api'
 import { isReviewCompleted } from '../../utils/cookies'
 import '../../styles/App.css'
-import '../../styles/General/ImageUpload.css'
-import '../../styles/General/DressSelection.css'
+import './ImageUpload.css'
+import './DressSelection.css'
+
+// trace_id 생성 함수
+const generateTraceId = () => {
+    return `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
 
 const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
     // General Fitting 상태
@@ -32,6 +38,19 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
     const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
     const [progress, setProgress] = useState(0)
     const [reviewModalOpen, setReviewModalOpen] = useState(false)
+    const [imageSelectionModalOpen, setImageSelectionModalOpen] = useState(false)
+    const [resultImages, setResultImages] = useState([]) // 두 개의 결과 이미지 저장
+    
+    // 프로파일링 관련 상태
+    const [traceId, setTraceId] = useState(null)
+    const profileTimingsRef = useRef({
+        bg_select_ms: null,
+        person_upload_ms: null,
+        person_validate_ms: null,
+        dress_drop_ms: null,
+        compose_click_to_response_ms: null,
+        result_image_load_ms: null
+    })
 
     // 로딩 메시지 목록 (순차적으로 표시, 마지막은 고정)
     const loadingMessages = [
@@ -117,6 +136,7 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
     const [isDragging, setIsDragging] = useState(false)
     const [showCheckmark, setShowCheckmark] = useState(false)
     const fileInputRef = useRef(null)
+    const modalFileInputRef = useRef(null)  // 모달용 별도 ref
     const prevProcessingRef = useRef(isProcessing)
 
     // DressSelection 상태
@@ -135,6 +155,7 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
     const contentRef = useRef(null)
     const sliderTrackRef = useRef(null)
     const sliderHandleRef = useRef(null)
+    const categoryButtonsRef = useRef(null)
 
     // 카테고리 정의
     const categories = [
@@ -218,9 +239,36 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
                         image: `${apiBaseUrl}/api/proxy-image?url=${encodeURIComponent(dress.url)}`,
                         originalUrl: dress.url,  // 합성용 원본 URL 보관
                         description: `${dress.style} 스타일의 드레스`,
-                        category: styleToCategory(dress.style)
+                        category: styleToCategory(dress.style),
+                        fitting_count: dress.fitting_count || 0  // 피팅 횟수 (백엔드에서 제공)
                     }))
-                    setDresses(transformedDresses)
+                    
+                    // 카테고리별로 그룹화하고 각 카테고리 내에서 피팅 횟수로 내림차순 정렬
+                    const groupedByCategory = transformedDresses.reduce((acc, dress) => {
+                        const category = dress.category
+                        if (!acc[category]) {
+                            acc[category] = []
+                        }
+                        acc[category].push(dress)
+                        return acc
+                    }, {})
+                    
+                    // 각 카테고리 내에서 피팅 횟수로 내림차순 정렬
+                    Object.keys(groupedByCategory).forEach(category => {
+                        groupedByCategory[category].sort((a, b) => 
+                            (b.fitting_count || 0) - (a.fitting_count || 0)
+                        )
+                    })
+                    
+                    // 카테고리 순서대로 평탄화
+                    const sortedDresses = []
+                    categories.forEach(cat => {
+                        if (groupedByCategory[cat.id]) {
+                            sortedDresses.push(...groupedByCategory[cat.id])
+                        }
+                    })
+                    
+                    setDresses(sortedDresses.length > 0 ? sortedDresses : transformedDresses)
                 } else {
                     setError('드레스 목록을 불러올 수 없습니다.')
                     setDresses([])
@@ -244,6 +292,19 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
             .then(data => setLoadingAnimation(data))
             .catch(error => console.error('Lottie 로드 실패:', error))
     }, [])
+
+    // 이미지 선택 모달이 열릴 때 body에 클래스 추가하여 헤더 숨기기
+    useEffect(() => {
+        if (imageSelectionModalOpen) {
+            document.body.classList.add('image-selection-modal-open')
+        } else {
+            document.body.classList.remove('image-selection-modal-open')
+        }
+
+        return () => {
+            document.body.classList.remove('image-selection-modal-open')
+        }
+    }, [imageSelectionModalOpen])
 
     // 매칭 완료 감지
     useEffect(() => {
@@ -305,9 +366,25 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
 
     // 배경 선택 핸들러
     const handleBackgroundSelect = (index) => {
+        // trace_id 생성 (피팅 1회 시작)
+        if (!traceId) {
+            const newTraceId = generateTraceId()
+            setTraceId(newTraceId)
+        }
+        
+        // 배경 선택 시간 측정 시작
+        if (profileTimingsRef.current.bg_select_ms === null) {
+            profileTimingsRef.current.bg_select_start = Date.now()
+        }
+        
         setSelectedBackgroundIndex(index)
         if (currentStep < 2) {
             setCurrentStep(2)
+        }
+        
+        // 배경 선택 완료 시간 측정
+        if (profileTimingsRef.current.bg_select_start) {
+            profileTimingsRef.current.bg_select_ms = Date.now() - profileTimingsRef.current.bg_select_start
         }
     }
 
@@ -319,6 +396,15 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
             return
         }
 
+        // trace_id 생성 (피팅 1회 시작)
+        if (!traceId) {
+            const newTraceId = generateTraceId()
+            setTraceId(newTraceId)
+        }
+        
+        // 드레스 드롭 시간 측정 시작
+        const dressDropStart = Date.now()
+
         setIsProcessing(true)
         setProgress(0)
         setLoadingMessageIndex(0)
@@ -328,24 +414,95 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
             const backgroundImageUrl = backgroundImages[selectedBackgroundIndex]
             const backgroundFile = await urlToFile(backgroundImageUrl, `background${selectedBackgroundIndex + 1}.jpg`)
 
-            const result = await autoMatchImageV4(uploadedImage, dress, backgroundFile)
+            // 드레스 드롭 시간 측정 완료 (드레스 업로드 완료)
+            profileTimingsRef.current.dress_drop_ms = Date.now() - dressDropStart
+            
+            // 합성 클릭 시간 측정 시작
+            const composeClickStart = Date.now()
 
-            if (result.success && result.result_image) {
-                setProgress(100)
-                setSelectedDress(dress)
-                setGeneralResultImage(result.result_image)
-                setOriginalResultImage(result.result_image) // 원본 이미지 저장
-                setSelectedFilter('none') // 필터 초기화
+            const result = await autoMatchImageV5V5(
+                uploadedImage, 
+                dress, 
+                backgroundFile,
+                traceId,
+                profileTimingsRef.current
+            )
+            
+            // 합성 클릭~응답 수신 시간 측정 완료
+            profileTimingsRef.current.compose_click_to_response_ms = Date.now() - composeClickStart
+
+            setProgress(100)
+            setSelectedDress(dress)
+            setSelectedFilter('none') // 필터 초기화
+
+            // /tryon/compare 엔드포인트는 V4V5CompareResponse를 반환 (v4_result와 v5_result 포함)
+            const images = []
+
+            // v4_result에서 이미지 추출
+            if (result.v4_result) {
+                const v4Result = result.v4_result
+                const v4Image = v4Result.result_image
+                if (v4Image && typeof v4Image === 'string' && v4Image.trim().length > 0) {
+                    images.push(v4Image)
+                }
+            }
+
+            // v5_result에서 이미지 추출
+            if (result.v5_result) {
+                const v5Result = result.v5_result
+                const v5Image = v5Result.result_image
+                if (v5Image && typeof v5Image === 'string' && v5Image.trim().length > 0) {
+                    images.push(v5Image)
+                }
+            }
+
+            // 결과 이미지 로딩 시간 측정 시작
+            const resultImageLoadStart = Date.now()
+            
+            // 두 개의 이미지가 있는 경우 모달 표시
+            if (images.length >= 2) {
+                setResultImages(images)
+                setImageSelectionModalOpen(true)
+                // 결과 이미지 로딩 시간 측정 완료 (화면 표시 완료)
+                setTimeout(() => {
+                    profileTimingsRef.current.result_image_load_ms = Date.now() - resultImageLoadStart
+                }, 100)
+            } else if (images.length === 1) {
+                // 하나의 이미지만 있는 경우
+                setGeneralResultImage(images[0])
+                setOriginalResultImage(images[0])
+                
+                // 결과 이미지 로딩 시간 측정 완료 (화면 표시 완료)
+                setTimeout(() => {
+                    profileTimingsRef.current.result_image_load_ms = Date.now() - resultImageLoadStart
+                }, 100)
 
                 // 리뷰 모달 표시 (1번만, 쿠키 확인)
                 if (!isReviewCompleted('general')) {
-                    // 결과 이미지가 화면에 표시된 후 2~3초 후 모달 표시
+                    setTimeout(() => {
+                        setReviewModalOpen(true)
+                    }, 3000)
+                }
+            } else if (result.success && result.result_image) {
+                // 단일 이미지 응답인 경우 (기존 동작 유지, 호환성)
+                setGeneralResultImage(result.result_image)
+                setOriginalResultImage(result.result_image)
+                
+                // 결과 이미지 로딩 시간 측정 완료 (화면 표시 완료)
+                setTimeout(() => {
+                    profileTimingsRef.current.result_image_load_ms = Date.now() - resultImageLoadStart
+                }, 100)
+
+                // 리뷰 모달 표시 (1번만, 쿠키 확인)
+                if (!isReviewCompleted('general')) {
                     setTimeout(() => {
                         setReviewModalOpen(true)
                     }, 3000)
                 }
             } else {
-                throw new Error(result.message || '매칭에 실패했습니다.')
+                // 이미지가 없는 경우 에러 메시지 확인
+                const errorMsg = result.message || result.v4_result?.message || result.v5_result?.message || '결과 이미지를 찾을 수 없습니다.'
+                throw new Error(errorMsg)
             }
 
             setIsProcessing(false)
@@ -369,6 +526,10 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
     const closeImageUploadModal = () => {
         setImageUploadModalOpen(false)
         setPendingDress(null)
+        // 모달이 닫힐 때 모달 input 초기화
+        if (modalFileInputRef.current) {
+            modalFileInputRef.current.value = ''
+        }
     }
 
     const handleImageUploadedForDress = (image) => {
@@ -397,10 +558,26 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
     }
 
     const handleFile = async (file) => {
+        // trace_id 생성 (피팅 1회 시작)
+        if (!traceId) {
+            const newTraceId = generateTraceId()
+            setTraceId(newTraceId)
+        }
+        
+        // 인물 업로드 시간 측정 시작
+        const personUploadStart = Date.now()
+        
         // 사람 감지 검증
         try {
             setIsValidatingPerson(true)
+            
+            // 인물 검증 시간 측정 시작
+            const personValidateStart = Date.now()
+            
             const validationResult = await validatePerson(file)
+            
+            // 인물 검증 시간 측정 완료
+            profileTimingsRef.current.person_validate_ms = Date.now() - personValidateStart
 
             // 동물이 감지된 경우
             if (validationResult.is_animal) {
@@ -423,6 +600,9 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
             reader.onloadend = () => {
                 setPreview(reader.result)
                 handleImageUpload(file)
+                
+                // 인물 업로드 시간 측정 완료
+                profileTimingsRef.current.person_upload_ms = Date.now() - personUploadStart
             }
             reader.readAsDataURL(file)
         } catch (error) {
@@ -497,8 +677,17 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
     const filteredDresses = selectedCategory === 'all'
         ? dresses
         : dresses.filter(dress => dress.category === selectedCategory)
+    
+    // 선택된 카테고리 내에서도 피팅 횟수로 정렬 (이미 정렬되어 있지만 확실하게)
+    const sortedFilteredDresses = [...filteredDresses].sort((a, b) => {
+        // fitting_count가 있으면 그것으로 정렬, 없으면 기존 순서 유지
+        if (a.fitting_count !== undefined && b.fitting_count !== undefined) {
+            return (b.fitting_count || 0) - (a.fitting_count || 0)
+        }
+        return 0
+    })
 
-    const dressesToRender = isMobile ? filteredDresses : filteredDresses.slice(0, displayCount)
+    const dressesToRender = isMobile ? sortedFilteredDresses : sortedFilteredDresses.slice(0, displayCount)
 
     const handleDressClick = (dress) => {
         if (isProcessing) return
@@ -519,12 +708,35 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
     }
 
     const handleCategoryClick = (categoryId) => {
+        // 같은 카테고리를 다시 선택해도 스크롤 초기화를 보장하기 위해 먼저 스크롤 초기화
+        if (contentRef.current) {
+            contentRef.current.scrollTop = 0
+            // 모바일에서 드레스 그리드 가로 스크롤 초기화
+            if (isMobile) {
+                contentRef.current.scrollLeft = 0
+            }
+        }
+        // 모바일에서 카테고리 버튼 가로 스크롤 초기화
+        if (isMobile && categoryButtonsRef.current) {
+            categoryButtonsRef.current.scrollLeft = 0
+        }
+
         setSelectedCategory(categoryId)
         setDisplayCount(6)
         setScrollPosition(0)
-        if (contentRef.current) {
-            contentRef.current.scrollTop = 0
-        }
+
+        // DOM 업데이트 후에도 다시 한 번 스크롤 초기화 (확실하게)
+        requestAnimationFrame(() => {
+            if (contentRef.current) {
+                contentRef.current.scrollTop = 0
+                if (isMobile) {
+                    contentRef.current.scrollLeft = 0
+                }
+            }
+            if (isMobile && categoryButtonsRef.current) {
+                categoryButtonsRef.current.scrollLeft = 0
+            }
+        })
     }
 
     const handleDragStart = (e, dress) => {
@@ -636,6 +848,21 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
     useEffect(() => {
         updateSliderHandleTop(scrollPosition)
     }, [scrollPosition, updateSliderHandleTop])
+
+    // 카테고리 변경 시 스크롤 초기화
+    useEffect(() => {
+        if (contentRef.current) {
+            contentRef.current.scrollTop = 0
+            // 모바일에서 드레스 그리드 가로 스크롤 초기화
+            if (isMobile) {
+                contentRef.current.scrollLeft = 0
+            }
+        }
+        // 모바일에서 카테고리 버튼 가로 스크롤 초기화
+        if (isMobile && categoryButtonsRef.current) {
+            categoryButtonsRef.current.scrollLeft = 0
+        }
+    }, [selectedCategory, isMobile])
 
     useEffect(() => {
         const container = contentRef.current
@@ -1054,7 +1281,7 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
                     <div className="step-badge">STEP 1</div>
                     <h3 className="step-title">피팅 배경을 먼저 선택해보세요</h3>
                     <p className="step-description">
-                        아래 배경 버튼을 눌러 웨딩 피팅 공간의 무드를 선택하면{isMobile && <br />} STEP 2로 이동합니다.
+                        아래 배경 버튼을 눌러 웨딩 피팅 공간의 배경을 선택하면{isMobile && <br />} STEP 2로 이동합니다.
                     </p>
                     {renderBackgroundButtons()}
                     <p className="step-tip">배경을 선택하면 자동으로 다음 단계가 열려요.</p>
@@ -1189,7 +1416,7 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
                                     >
                                         ‹
                                     </button>
-                                    <div className="category-buttons">
+                                    <div className="category-buttons" ref={categoryButtonsRef}>
                                         {visibleCategories.map((category) => (
                                             <button
                                                 key={category.id}
@@ -1327,9 +1554,6 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
                 onClose={closeImageUploadModal}
                 message="먼저 전신 사진을 업로드해주세요."
                 center
-                onConfirm={() => {
-                    fileInputRef.current?.click()
-                }}
             >
                 <input
                     type="file"
@@ -1342,7 +1566,7 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
                     }}
                     style={{ display: 'none' }}
                     id="modal-image-input"
-                    ref={fileInputRef}
+                    ref={modalFileInputRef}
                 />
             </Modal>
 
@@ -1369,6 +1593,25 @@ const GeneralFitting = ({ onBackToMain, initialCategory, onCategorySet }) => {
                     </div>
                 </div>
             )}
+
+            {/* 이미지 선택 모달 */}
+            <ImageSelectionModal
+                isOpen={imageSelectionModalOpen}
+                onClose={() => setImageSelectionModalOpen(false)}
+                images={resultImages}
+                onSelect={(selectedImage) => {
+                    setGeneralResultImage(selectedImage)
+                    setOriginalResultImage(selectedImage)
+                    setImageSelectionModalOpen(false)
+
+                    // 리뷰 모달 표시 (1번만, 쿠키 확인)
+                    if (!isReviewCompleted('general')) {
+                        setTimeout(() => {
+                            setReviewModalOpen(true)
+                        }, 3000)
+                    }
+                }}
+            />
 
             {/* 리뷰 모달 */}
             <ReviewModal

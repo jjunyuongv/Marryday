@@ -167,6 +167,14 @@ async def dress_batch_test_page(request: Request):
     return templates.TemplateResponse("dress-batch-test.html", {"request": request})
 
 
+@router.get("/dress-check-test", response_class=HTMLResponse, tags=["관리자"])
+async def dress_check_test_page(request: Request):
+    """
+    단일 이미지 드레스 판별 테스트 페이지
+    """
+    return templates.TemplateResponse("dress-check-test.html", {"request": request})
+
+
 @router.get("/pose-landmark-visualizer", response_class=HTMLResponse, tags=["Web Interface"])
 async def pose_landmark_visualizer_page(request: Request):
     """
@@ -177,8 +185,27 @@ async def pose_landmark_visualizer_page(request: Request):
     return templates.TemplateResponse("pose_landmark_visualizer.html", {"request": request})
 
 
+@router.get("/prompt-test", response_class=HTMLResponse, tags=["Web Interface"])
+async def prompt_test_page(request: Request):
+    """
+    V4 프롬프트 테스트 페이지
+    
+    V4 파이프라인의 프롬프트를 변경하면서 기본 vs 커스텀 결과를 비교하는 페이지
+    """
+    return templates.TemplateResponse("prompt_test.html", {"request": request})
+
+
+@router.get("/admin/line-quiz-upload", response_class=HTMLResponse, tags=["관리자"])
+async def line_quiz_upload_page(request: Request):
+    """
+    라인 퀴즈 이미지 업로드 페이지
+    
+    라인 퀴즈용 이미지를 S3에 업로드하는 페이지
+    """
+    return templates.TemplateResponse("line_quiz_upload.html", {"request": request})
+
+
 @router.get("/favicon.ico")
 async def favicon():
     """파비콘 제공"""
     return FileResponse("static/favicon.ico")
-

@@ -1,0 +1,2485 @@
+/* ============================================
+   웹 버전 기본 스타일 (Desktop)
+   ============================================ */
+
+.image-upload {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    background: white;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    overflow: visible;
+    position: relative;
+}
+
+.step-progress {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 0 24px 16px;
+    box-sizing: border-box;
+}
+
+.step-progress-item {
+    background: rgba(240, 240, 240, 0.8);
+    border-radius: 999px;
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #8b8b8b;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.step-progress-item.completed {
+    background: rgba(186, 169, 120, 0.15);
+    color: #b08968;
+}
+
+.step-progress-item.active {
+    background: linear-gradient(135deg, #b08968 0%, #ddb892 100%);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 18px rgba(176, 137, 104, 0.25);
+}
+
+.step-progress-number {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.step-progress-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.step-guide-panel {
+    width: 95%;
+    flex: 1;
+    background: linear-gradient(145deg, #faf8f3 0%, #f5f0e8 100%);
+    border-radius: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    padding: 52px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08);
+}
+
+.step-badge {
+    font-size: 14px;
+    font-weight: 700;
+    color: #b08968;
+    background: rgba(176, 137, 104, 0.12);
+    padding: 6px 18px;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+    cursor: default;
+}
+
+.step-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c2c2c;
+    cursor: default;
+}
+
+.step-description {
+    margin: 0;
+    font-size: 15px;
+    color: #6b6b6b;
+    line-height: 1.5;
+    cursor: default;
+}
+
+.step-tip {
+    font-size: 13px;
+    color: #9a7b57;
+    margin-top: 8px;
+    cursor: default;
+}
+
+.step-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.step-actions button,
+.step-link-button {
+    border: none;
+    background: rgba(176, 137, 104, 0.12);
+    color: #b08968;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.step-actions button:hover,
+.step-link-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(176, 137, 104, 0.25);
+}
+
+.step-link-button {
+    background: transparent;
+    color: #8a7968;
+    text-decoration: underline;
+    padding: 6px 12px;
+}
+
+.step-result-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: -40px;
+    margin-left: 40px;
+    transform: translateY(-20px);
+}
+
+.step-guide-panel-step3 .step-result-actions {
+    margin-top: -40px;
+}
+
+/* ============================================
+   웹 버전 - Step Guide Panel
+   ============================================ */
+.step-guide-panel .image-upload-wrapper {
+    width: 100%;
+    max-width: 520px;
+}
+
+.step-guide-panel .upload-area,
+.step-guide-panel .preview-container {
+    width: 100%;
+    max-width: 500px;
+    height: 500px;
+    max-height: 500px;
+    aspect-ratio: 500 / 500;
+    flex: 0 0 auto;
+    margin-left: -80px;
+    margin-top: 10px;
+
+}
+
+/* 일반피팅에서 preview-container 오버라이드 */
+.fitting-container .step-guide-panel .preview-container {
+    max-width: 800px !important;
+}
+
+.step-guide-panel-step3 {
+    padding-top: 36px;
+    position: relative;
+}
+
+.step-guide-panel-step3 .step-3-header {
+    margin-top: -12px;
+}
+
+.step-guide-panel-step3 .image-upload-wrapper {
+    margin-top: -8px;
+}
+
+.step-guide-panel-step3 .step-actions {
+    display: none;
+}
+
+/* step3에서 필터 버튼들을 우측에 세로 배치 */
+.step-guide-panel-step3 .step-result-actions {
+    position: absolute;
+    right: 10px;
+    top: 48%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    margin-top: 0;
+    margin-left: 0;
+    width: auto;
+}
+
+.step-guide-panel-step3 .step-result-actions .filter-buttons-container {
+    margin-bottom: 0;
+}
+
+.step-guide-panel-step3 .step-result-actions .download-button {
+    margin-top: 190px !important;
+    margin-right: 80px !important;
+}
+
+.step-guide-panel-step3 .filter-buttons-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 8px !important;
+    margin-right: 20px !important;
+    margin-top: 30px !important;
+}
+
+.step-guide-panel-step3 .filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    margin-bottom: 4px;
+    margin-right: 80px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.step-guide-panel-step3 .filter-label i {
+    font-size: 14px;
+    display: inline-block;
+    font-style: normal;
+    line-height: 1;
+}
+
+.step-guide-panel-step3 .filter-buttons {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-right: 40px !important;
+}
+
+.step-guide-panel-step3 .filter-button {
+    min-width: 80px;
+    text-align: center;
+}
+
+/* ============================================
+   웹 버전 - Step3 Preview Container Download Button
+   ============================================ */
+.step-guide-panel-step3 .preview-container>.download-button,
+.step-guide-panel-step3 .preview-container:not(.step-result-actions) .download-button {
+    position: absolute !important;
+    right: 50px !important;
+    bottom: 10px !important;
+    left: auto !important;
+    top: auto !important;
+    transform: translateX(0) !important;
+    background: #70964e !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    transition: var(--transition) !important;
+    z-index: 10 !important;
+    box-shadow: 0 2px 8px #70964e !important;
+    border: none !important;
+    cursor: pointer !important;
+    width: auto !important;
+    margin: 0 !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+.step-guide-panel-step2 {
+    padding-top: 32px;
+    margin-top: -24px;
+}
+
+.step-guide-panel-step2 .step-panel-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    align-items: flex-end;
+}
+
+.step-guide-panel-step2 .step-panel-content .step-link-button {
+    position: absolute;
+    top: 520px;
+    right: -5px;
+    margin: 0;
+}
+
+.step-guide-panel-step3 .step-link-button.step-3-back-button {
+    position: absolute;
+    top: 600px;
+    right: -5px;
+    margin: 0;
+}
+
+/* 웹 버전에서는 step-panel-content가 이미지 영역 크기에 영향을 주지 않도록 */
+.step-guide-panel-step3 .step-panel-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    align-items: flex-end;
+}
+
+.step-guide-panel-step3 .step-panel-content .image-upload-wrapper {
+    width: auto;
+    max-width: none;
+}
+
+.step-guide-panel-step2 .step-panel-content .image-upload-wrapper {
+    margin-top: -5px;
+    align-self: flex-end;
+    transform: translateX(-150px);
+    margin-bottom: -10px;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* 데스크톱 화면(1440px 이상)에서만 기본 height 적용 */
+@media (min-width: 90.0625rem) {
+
+    .step-guide-panel-step2 .step-panel-content .preview-container,
+    .step-guide-panel-step2 .step-panel-content .upload-area {
+        width: 100% !important;
+        max-width: 450px !important;
+        height: 520px !important;
+        max-height: 520px !important;
+        margin-left: 250px !important;
+    }
+}
+
+/* 노트북 화면 이하에서는 기본 스타일만 (height는 미디어 쿼리에서 설정) */
+@media (max-width: 90rem) {
+
+    .step-guide-panel-step2 .step-panel-content .preview-container,
+    .step-guide-panel-step2 .step-panel-content .upload-area {
+        width: 100% !important;
+        max-width: 450px !important;
+        margin-left: 250px !important;
+    }
+}
+
+.step-2-header {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 16px;
+}
+
+.step-2-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.step-guide-panel-step2 .step-title,
+.step-guide-panel-step2 .step-description {
+    text-align: left;
+}
+
+.step-guide-panel-step2 .step-description {
+    margin-top: 0;
+}
+
+.step-3-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.step-3-message {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c2c2c;
+    cursor: default;
+    text-align: left;
+}
+
+/* ============================================
+   노트북 화면 스타일 (769px ~ 1440px)
+   ============================================ */
+@media (min-width: 48.0625rem) and (max-width: 90rem) {
+    .step-guide-panel {
+        padding: 30px 22px 10px 22px !important;
+        transform: scale(0.95);
+        transform-origin: top center;
+        min-height: 550px !important;
+        height: 550px !important;
+        max-height: 550px !important;
+        gap: 8px !important;
+        margin-bottom: 0 !important;
+    }
+
+    .fitting-container .step-guide-panel,
+    .fitting-container .step-guide-panel-step1,
+    .fitting-container .step-guide-panel-step2,
+    .fitting-container .step-guide-panel-step3 {
+        min-height: 550px !important;
+        height: 550px !important;
+        max-height: 550px !important;
+        gap: 10px !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .step-guide-panel-step2 .step-panel-content,
+    .step-guide-panel-step3 .step-panel-content {
+        gap: 8px !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .step-title {
+        font-size: 19px !important;
+    }
+
+    .step-description {
+        font-size: 14.5px !important;
+    }
+
+    .step-badge {
+        font-size: 13px !important;
+        padding: 6px 17px !important;
+    }
+
+    .step-guide-panel .preview-container {
+        max-width: 700px !important;
+        height: 380px !important;
+        max-height: 380px !important;
+    }
+
+    .fitting-container .step-guide-panel .preview-container {
+        height: 380px !important;
+        max-height: 380px !important;
+    }
+
+    .step-guide-panel .upload-area {
+        max-width: 450px !important;
+        height: 380px !important;
+        max-height: 380px !important;
+    }
+
+    .fitting-container .step-guide-panel .upload-area {
+        height: 380px !important;
+        max-height: 380px !important;
+    }
+
+    .step-progress-item {
+        padding: 7px 14px !important;
+        font-size: 11.5px !important;
+    }
+
+    .step-progress-number {
+        font-size: 15px !important;
+    }
+
+    .step-progress-label {
+        font-size: 10.5px !important;
+    }
+
+    .filter-button {
+        padding: 7px 14px !important;
+        font-size: 11.5px !important;
+    }
+
+    .filter-label {
+        font-size: 13px !important;
+    }
+
+    .download-button {
+        padding: 6px 11px !important;
+        font-size: 11.5px !important;
+    }
+
+    .step-guide-panel-step2 .step-panel-content .preview-container,
+    .step-guide-panel-step2 .step-panel-content .upload-area {
+        max-width: 400px !important;
+        height: 380px !important;
+        max-height: 380px !important;
+        margin-left: 200px !important;
+    }
+
+    .fitting-container .step-guide-panel-step2 .step-panel-content .preview-container,
+    .fitting-container .step-guide-panel-step2 .step-panel-content .upload-area {
+        height: 380px !important;
+        max-height: 380px !important;
+    }
+
+    .step-guide-panel-step3 .preview-container {
+        max-width: 700px !important;
+        height: 380px !important;
+        max-height: 380px !important;
+    }
+
+    .fitting-container .step-guide-panel-step3 .preview-container {
+        height: 380px !important;
+        max-height: 380px !important;
+    }
+
+    .step-background-selector .background-button {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    /* Step3 필터 영역 크기 축소 및 우측 이동 */
+    .step-guide-panel-step3 .step-result-actions {
+        right: -20px !important;
+    }
+
+    .step-guide-panel-step3 .filter-label {
+        font-size: 10.5px !important;
+        margin-right: 60px !important;
+        margin-bottom: 3px !important;
+    }
+
+    .step-guide-panel-step3 .filter-label i {
+        font-size: 11.5px !important;
+    }
+
+    .step-guide-panel-step3 .filter-buttons-container {
+        margin-right: 15px !important;
+        margin-top: 25px !important;
+        gap: 6px !important;
+    }
+
+    .step-guide-panel-step3 .filter-buttons {
+        gap: 8px !important;
+        margin-right: 30px !important;
+    }
+
+    .step-guide-panel-step3 .filter-button {
+        min-width: 65px !important;
+        padding: 5px 10px !important;
+        font-size: 10.5px !important;
+    }
+
+    .step-guide-panel-step3 .step-result-actions .download-button {
+        margin-top: 170px !important;
+        margin-right: 60px !important;
+    }
+}
+
+/* ============================================
+   모바일 버전 스타일 (max-width: 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+    .step-3-header {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .step-3-message {
+        text-align: center;
+        width: 100%;
+    }
+
+    .step-guide-panel-step3 .step-3-header .step-badge {
+        align-self: center;
+    }
+
+    .step-2-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .step-2-text {
+        width: 100%;
+        text-align: center;
+    }
+
+    .step-2-header .step-badge {
+        align-self: center;
+    }
+
+    .step-guide-panel-step2 .step-title {
+        text-align: center;
+    }
+
+    .step-guide-panel-step2 .step-panel-content .step-link-button {
+        position: static;
+        align-self: flex-end;
+    }
+
+    .step-guide-panel-step2 .step-panel-content .image-upload-wrapper {
+        margin-top: 16px;
+    }
+}
+
+.image-upload-wrapper {
+    width: 80%;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.fitting-container .image-upload {
+    margin-bottom: 0;
+    margin-top: 40px;
+}
+
+/* ============================================
+   웹 버전 - Upload Area
+   ============================================ */
+.upload-area {
+    background: hsl(0, 0%, 100%);
+    border: 5px solid #f8f8f800;
+    border-radius: 2px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 80%;
+    flex: 1;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    box-shadow:
+        /* 안쪽 베벨 효과 */
+        inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+        inset 0 2px 4px rgba(0, 0, 0, 0.05),
+        /* 바깥쪽 입체 그림자 */
+        0 4px 8px rgba(0, 0, 0, 0.295),
+        0 8px 16px rgba(0, 0, 0, 0.281),
+        0 16px 32px rgba(0, 0, 0, 0.06);
+    height: 100%;
+    animation: gentleJump 7s ease-in-out infinite;
+    margin-top: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+
+/* 일반피팅에서 upload-area 높이만 줄임 */
+.fitting-container .upload-area {
+    max-height: 100%;
+    height: 100%;
+}
+
+@keyframes gentleJump {
+
+    0%,
+    85%,
+    100% {
+        transform: translateY(0);
+    }
+
+    90% {
+        transform: translateY(-12px);
+    }
+
+    95% {
+        transform: translateY(0);
+    }
+}
+
+.upload-area:hover {
+    border-color: #f8f8f800;
+    background: #e2e2e283;
+    animation: gentleJump 7s ease-in-out infinite;
+    transform: none;
+    cursor: pointer;
+}
+
+.upload-area.dragging {
+    border-color: var(--secondary-color);
+    background: #16161648;
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    font-size: 60px;
+    margin-bottom: 12px;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-icon img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.upload-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: black;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.upload-subtext {
+    font-size: 14px;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+/* ============================================
+   웹 버전 - Preview Container
+   ============================================ */
+.preview-container {
+    position: relative;
+    background: #fdfbfb;
+    border-radius: 2px;
+    padding: 0;
+    /* 사진 액자 프레임 효과 */
+    box-shadow:
+        /* 안쪽 베벨 효과 */
+        inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+        inset 0 2px 4px rgba(0, 0, 0, 0.05),
+        /* 바깥쪽 입체 그림자 */
+        0 4px 8px rgba(0, 0, 0, 0.1),
+        0 8px 16px rgba(0, 0, 0, 0.08),
+        0 16px 32px rgba(0, 0, 0, 0.06);
+    width: 90%;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    overflow: hidden;
+    box-sizing: border-box;
+    margin-left: -80px;
+    margin-top: -20px;
+}
+
+.fitting-container .step-guide-panel {
+    margin-top: -70px;
+}
+
+/* Step1 영역 컨텐츠를 아래로 이동 (웹 버전만) */
+@media (min-width: 769px) {
+    .fitting-container .step-guide-panel:not(.step-guide-panel-step2):not(.step-guide-panel-step3) {
+        padding-top: 120px;
+    }
+}
+
+/* 데스크톱 화면 (1440px 이상)에서만 기본 height 적용 */
+@media (min-width: 90.0625rem) {
+    .fitting-container .step-guide-panel .preview-container {
+        width: 100% !important;
+        max-width: 900px !important;
+        height: 550px !important;
+        max-height: 600px !important;
+        margin-top: 10px;
+        margin-left: -80px !important;
+    }
+}
+
+/* 노트북 화면 이하에서 기본 스타일 */
+@media (max-width: 90rem) {
+    .fitting-container .step-guide-panel .preview-container {
+        width: 100% !important;
+        max-width: 900px !important;
+        margin-top: 10px;
+        margin-left: -80px !important;
+    }
+}
+
+
+.fitting-container .step-guide-panel .preview-container .preview-image {
+    width: 100% !important;
+    height: 99% !important;
+    object-fit: contain;
+    transform: none !important;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out !important;
+}
+
+/* 일반피팅에서 preview-container 크기 키우기 */
+.fitting-container .image-upload-wrapper {
+    width: 80%;
+
+}
+
+.fitting-container .preview-container {
+    width: 98%;
+
+    max-height: 100%;
+    height: 100%;
+    min-height: 500px;
+    margin-left: -80px;
+    margin-top: -20px;
+}
+
+.fitting-container .upload-area {
+    width: 95%;
+}
+
+.preview-container.dragging {
+    border-color: #2c2c2c;
+    background: rgba(44, 44, 44, 0.05);
+    cursor: copy;
+}
+
+/* ============================================
+   웹 버전 - Preview Image
+   ============================================ */
+.preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 99.8%;
+    object-fit: contain;
+    border-radius: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+
+/* ============================================
+   모바일 버전 - 이미지 클릭 가능 (max-width: 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+    .preview-image.clickable {
+        pointer-events: auto;
+        cursor: zoom-in;
+    }
+}
+
+.preview-image.fade-transition {
+    animation: smoothFadeTransition 1s ease-in-out;
+}
+
+@keyframes smoothFadeTransition {
+    0% {
+        opacity: 1;
+        transform: scale(1) translateZ(0);
+    }
+
+    40% {
+        opacity: 0.2;
+        transform: scale(0.95) translateZ(0);
+    }
+
+    60% {
+        opacity: 0.2;
+        transform: scale(0.95) translateZ(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateZ(0);
+    }
+}
+
+
+.preview-container.transitioning .preview-image {
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+.preview-container.transitioning {
+    transition: all 0.5s ease-in-out;
+}
+
+.remove-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(238, 15, 15, 0.9);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--transition);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+}
+
+/* ============================================
+   웹 버전 - Preview Container Download Button
+   ============================================ */
+.preview-container>.download-button {
+    position: absolute !important;
+    right: 50px !important;
+    bottom: 10px !important;
+    left: auto !important;
+    top: auto !important;
+    transform: translateX(0) !important;
+    background: #70964e !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    transition: var(--transition) !important;
+    z-index: 10 !important;
+    box-shadow: 0 2px 8px #70964e !important;
+    border: none !important;
+    cursor: pointer !important;
+    width: auto !important;
+    margin: 0 !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+
+.step-result-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.step-result-actions .download-button {
+    position: static !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    background: #70964e !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px #70964e !important;
+    border: none !important;
+    cursor: pointer !important;
+    width: auto !important;
+    margin-top: 0 !important;
+}
+
+.step-result-actions .download-button:hover {
+    background: #70964e !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px #70964e !important;
+}
+
+.preview-container .download-button:hover {
+    background: #70964e !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px #70964e !important;
+}
+
+
+
+.remove-button:hover {
+    background: rgba(255, 99, 99, 1);
+    transform: scale(1.1);
+}
+
+/* ============================================
+   웹 버전 - Filter Buttons
+   ============================================ */
+.filter-buttons-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    cursor: default;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* 필터 네비게이션 버튼 - 기본적으로 숨김 (모바일에서만 표시) */
+.filter-nav-button {
+    display: none;
+}
+
+.filter-buttons-wrapper {
+    display: contents;
+}
+
+/* 웹 버전에서 filter-buttons-wrapper는 기본적으로 contents */
+.step-guide-panel-step3 .filter-buttons-wrapper {
+    display: contents;
+}
+
+/* From Uiverse.io by dalbrechtmartin */
+.filter-button {
+    position: relative;
+    padding: 8px 16px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    color: #000000;
+    box-shadow: 0px 0px 10px 0px rgb(255, 255, 255);
+    border-radius: 100px;
+    border: 1px solid #d6d2d2;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.filter-button .star-1 {
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    width: 18px;
+    height: auto;
+    filter: drop-shadow(0 0 0 #fffdef);
+    z-index: -5;
+    transition: all 0.8s cubic-bezier(0.05, 0.83, 0.43, 0.96);
+}
+
+.filter-button .star-2 {
+    position: absolute;
+    top: 45%;
+    left: 45%;
+    width: 11px;
+    height: auto;
+    filter: drop-shadow(0 0 0 #fffdef);
+    z-index: -5;
+    transition: all 0.8s cubic-bezier(0, 0.4, 0, 1.01);
+}
+
+.filter-button .star-3 {
+    position: absolute;
+    top: 40%;
+    left: 40%;
+    width: 4px;
+    height: auto;
+    filter: drop-shadow(0 0 0 #fffdef);
+    z-index: -5;
+    transition: all 0.8s cubic-bezier(0, 0.4, 0, 1.01);
+}
+
+.filter-button .star-4 {
+    position: absolute;
+    top: 20%;
+    left: 40%;
+    width: 6px;
+    height: auto;
+    filter: drop-shadow(0 0 0 #fffdef);
+    z-index: -5;
+    transition: all 0.8s cubic-bezier(0, 0.4, 0, 1.01);
+}
+
+.filter-button .star-5 {
+    position: absolute;
+    top: 25%;
+    left: 45%;
+    width: 11px;
+    height: auto;
+    filter: drop-shadow(0 0 0 #fffdef);
+    z-index: -5;
+    transition: all 0.8s cubic-bezier(0, 0.4, 0, 1.01);
+}
+
+.filter-button .star-6 {
+    position: absolute;
+    top: 5%;
+    left: 50%;
+    width: 4px;
+    height: auto;
+    filter: drop-shadow(0 0 0 #fffdef);
+    z-index: -5;
+    transition: all 0.8s cubic-bezier(0, 0.4, 0, 1.01);
+}
+
+.filter-button:hover {
+    background: #aca15d;
+    color: #ffffff;
+    box-shadow: 0 0 80px #ffffff8c;
+}
+
+.filter-button:hover .star-1 {
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    width: 14px;
+    height: auto;
+    filter: drop-shadow(0 0 10px #fffdef);
+    z-index: 2;
+}
+
+.filter-button:hover .star-2 {
+    position: absolute;
+    top: 35%;
+    left: -25%;
+    width: 11px;
+    height: auto;
+    filter: drop-shadow(0 0 10px #fffdef);
+    z-index: 2;
+}
+
+.filter-button:hover .star-3 {
+    position: absolute;
+    top: 80%;
+    left: -10%;
+    width: 7px;
+    height: auto;
+    filter: drop-shadow(0 0 10px #fffdef);
+    z-index: 2;
+}
+
+.filter-button:hover .star-4 {
+    position: absolute;
+    top: -25%;
+    left: 105%;
+    width: 14px;
+    height: auto;
+    filter: drop-shadow(0 0 10px #fffdef);
+    z-index: 2;
+}
+
+.filter-button:hover .star-5 {
+    position: absolute;
+    top: 30%;
+    left: 115%;
+    width: 11px;
+    height: auto;
+    filter: drop-shadow(0 0 10px #fffdef);
+    z-index: 2;
+}
+
+.filter-button:hover .star-6 {
+    position: absolute;
+    top: 80%;
+    left: 105%;
+    width: 7px;
+    height: auto;
+    filter: drop-shadow(0 0 10px #fffdef);
+    z-index: 2;
+}
+
+.filter-button .fil0 {
+    fill: #fffdef;
+}
+
+.filter-button.active {
+    background: #aca15d;
+    color: #ffffff;
+}
+
+.filter-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ============================================
+   웹 버전 - Processing Overlay
+   ============================================ */
+.processing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 20px;
+    border-radius: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.processing-overlay p {
+    margin-top: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #000000;
+    pointer-events: none;
+}
+
+.processing-overlay .loading-message {
+    margin-top: -30px;
+    font-size: 16px;
+    font-weight: 400;
+    font-family: 'GowoonDodum', sans-serif;
+    color: #000000;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+    min-height: 24px;
+}
+
+.processing-overlay .progress-bar-container {
+    margin-top: 10px;
+    width: 80%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.processing-overlay .progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.processing-overlay .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ad9f41 0%, #c4b563 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease-out;
+    box-shadow: 0 2px 4px rgba(173, 159, 65, 0.3);
+}
+
+.processing-overlay .progress-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    pointer-events: none;
+}
+
+.processing-overlay .loading-notice,
+.preview-container .processing-overlay .loading-notice,
+.image-upload-wrapper .preview-container .processing-overlay .loading-notice {
+    font-size: 12px;
+    color: rgba(102, 102, 102, 0.842);
+    margin-top: -20px !important;
+    text-align: center;
+    font-weight: 400;
+}
+
+/* 일반피팅 화면에서 loading-notice 위치 조정 */
+.fitting-container .processing-overlay .loading-notice,
+.fitting-container .preview-container .processing-overlay .loading-notice,
+.fitting-container .image-upload-wrapper .preview-container .processing-overlay .loading-notice {
+    margin-top: 140px !important;
+}
+
+.spinner-lottie+p {
+    margin-top: -40px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #2c2c2c;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    pointer-events: none;
+}
+
+.spinner-lottie {
+    width: 250px;
+    height: 250px;
+    margin-top: 50px;
+    object-fit: contain;
+    pointer-events: none;
+    filter: brightness(0) saturate(100%) invert(67%) sepia(12%) saturate(507%) hue-rotate(12deg) brightness(90%) contrast(120%);
+    opacity: 1;
+}
+
+/* 매칭 완료 시 오버레이 가운데 정렬 */
+.processing-overlay:has(.completion-icon) {
+    justify-content: center;
+    padding-top: 0;
+}
+
+.completion-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: white;
+    font-weight: bold;
+    pointer-events: none;
+    animation: checkPop 0.5s ease-out;
+}
+
+@keyframes checkPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.drop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(119, 118, 118, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+    pointer-events: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.drop-overlay p {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed white;
+    border-radius: 8px;
+    background: rgba(146, 145, 145, 0.5);
+    pointer-events: none;
+}
+
+/* ============================================
+   모바일 버전 - 매칭/처리 오버레이 (max-width: 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+
+    /* 일반피팅 모바일 - 모든 preview-container height 강제 설정 */
+    .fitting-container .step-guide-panel .preview-container,
+    .fitting-container .step-guide-panel-step2 .preview-container,
+    .fitting-container .step-guide-panel-step3 .preview-container,
+    .fitting-container .preview-container {
+        height: 310px !important;
+        max-height: 310px !important;
+        min-height: 310px !important;
+    }
+
+    .fitting-container .step-guide-panel .upload-area,
+    .fitting-container .step-guide-panel-step2 .upload-area,
+    .fitting-container .step-guide-panel-step3 .upload-area {
+        height: 220px !important;
+        max-height: 220px !important;
+        min-height: 220px !important;
+    }
+
+    /* 모바일에서 매칭 중 요소들을 위로 올리기 */
+    .processing-overlay {
+        justify-content: flex-start !important;
+        padding-top: 0 !important;
+        align-items: center !important;
+    }
+
+    .processing-overlay .spinner-lottie {
+        width: 180px !important;
+        height: 180px !important;
+        margin-top: 30px !important;
+        margin-bottom: -30px !important;
+    }
+
+    .processing-overlay .loading-message {
+        margin-top: 10px !important;
+        font-size: 14px !important;
+    }
+
+    .processing-overlay .progress-bar-container {
+        margin-top: 25px !important;
+        width: 90% !important;
+        margin-bottom: 5px !important;
+    }
+
+    .processing-overlay .loading-notice,
+    .preview-container .processing-overlay .loading-notice,
+    .image-upload-wrapper .preview-container .processing-overlay .loading-notice {
+        font-size: 10px !important;
+        color: rgba(102, 102, 102, 0.842) !important;
+        margin-top: 8px !important;
+        text-align: center !important;
+        font-weight: 400 !important;
+    }
+
+    /* 모바일 버전 - 이미지 분석 중 문구 크기 조정 */
+    .validation-loader-wrapper .upload-text,
+    .step-guide-panel-loader-wrapper .upload-text {
+        font-size: 13px !important;
+        color: #212121 !important;
+        margin: 0 !important;
+        text-align: center !important;
+    }
+
+    /* 모바일 버전 - 로딩 아이콘 크기 조정 */
+    .upload-area .validation-loader-wrapper .loader,
+    .upload-area .step-guide-panel-loader-wrapper .loader,
+    .step-guide-panel .validation-loader-wrapper .loader,
+    .step-guide-panel .step-guide-panel-loader-wrapper .loader,
+    .validation-loader-wrapper .loader,
+    .step-guide-panel-loader-wrapper .loader {
+        width: 90px !important;
+        height: 90px !important;
+        border-width: 3px !important;
+    }
+
+    .upload-area .validation-loader-wrapper .loader::before,
+    .upload-area .step-guide-panel-loader-wrapper .loader::before,
+    .step-guide-panel .validation-loader-wrapper .loader::before,
+    .step-guide-panel .step-guide-panel-loader-wrapper .loader::before,
+    .validation-loader-wrapper .loader::before,
+    .step-guide-panel-loader-wrapper .loader::before {
+        top: 13px !important;
+        left: 13px !important;
+        right: 13px !important;
+        bottom: 13px !important;
+    }
+
+    /* 모바일에서 매칭 완료 시 위치 조정 */
+    .processing-overlay:has(.completion-icon) {
+        justify-content: center !important;
+        padding-top: 40px !important;
+    }
+
+    .image-upload {
+        padding: 0;
+        margin-top: 0;
+    }
+
+    .fitting-container .image-upload {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .step-guide-panel {
+        padding: 24px 16px;
+        border-radius: 16px;
+        gap: 12px;
+    }
+
+    .step-badge {
+        font-size: 12px;
+        padding: 5px 14px;
+    }
+
+    .step-title {
+        font-size: 18px;
+    }
+
+    .step-description {
+        font-size: 13px;
+    }
+
+    .step-tip {
+        font-size: 12px;
+    }
+
+    .step-guide-panel .image-upload-wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .step-guide-panel .upload-area,
+    .step-guide-panel .preview-container {
+        width: 100%;
+        max-width: 100%;
+        height: 220px !important;
+        max-height: 220px !important;
+    }
+
+    .fitting-container .step-guide-panel .preview-container {
+        max-width: 100% !important;
+        height: 220px !important;
+        max-height: 220px !important;
+        margin-left: 0 !important;
+        margin-top: 0;
+    }
+
+    .fitting-container .step-guide-panel {
+        margin-top: 0;
+        margin-left: 10px;
+    }
+
+    .step-guide-panel-step2 {
+        padding-top: 20px;
+        margin-top: 0;
+    }
+
+    .step-guide-panel-step2 .step-panel-content {
+        gap: 12px;
+        align-items: center;
+    }
+
+    .step-guide-panel-step2 .step-panel-content .step-link-button {
+        position: static;
+        align-self: flex-end;
+        top: auto;
+        right: auto;
+        margin: 0;
+    }
+
+    .step-guide-panel-step3 .step-panel-content {
+        gap: 12px;
+        align-items: center;
+    }
+
+    /* 모바일 전용: step3 버튼을 이미지 영역 위에 배치 */
+    .step-guide-panel-step3 .step-link-button.step-3-back-button.mobile-step-3-back-button {
+        position: absolute;
+        top: 85px;
+        right: 20px;
+        margin: 0 !important;
+        z-index: 10;
+    }
+
+    /* 모바일에서 step3 이미지 영역에 간격 추가 (버튼이 위에 있으므로) */
+    .step-guide-panel-step3 .image-upload-wrapper {
+        margin-top: 20px !important;
+    }
+
+    .step-guide-panel-step2 .step-panel-content .image-upload-wrapper {
+        margin-top: 0;
+        transform: none;
+        margin-bottom: 0;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .step-guide-panel-step2 .step-panel-content .preview-container,
+    .step-guide-panel-step2 .step-panel-content .upload-area {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 220px !important;
+        max-height: 220px !important;
+        margin-left: 0 !important;
+    }
+
+    .step-guide-panel-step3 {
+        padding-top: 20px;
+    }
+
+    .step-guide-panel-step3 .step-3-header {
+        margin-top: 0;
+    }
+
+    .step-guide-panel-step3 .image-upload-wrapper {
+        margin-top: 0;
+    }
+
+    .step-3-message {
+        font-size: 16px;
+    }
+
+    .step-result-actions {
+        position: static !important;
+        transform: none !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 16px !important;
+        margin-top: 16px !important;
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .step-guide-panel-step3 .step-result-actions {
+        position: relative !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin-top: 16px !important;
+        margin-left: 0 !important;
+        width: 100% !important;
+        flex-wrap: wrap !important;
+    }
+
+    .step-guide-panel-step3 .step-result-actions .filter-buttons-container {
+        width: auto;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        margin-right: 0 !important;
+        margin-left: 30px !important;
+        margin-top: 0 !important;
+        flex: 1;
+        position: relative;
+    }
+
+    .step-guide-panel-step3 .filter-label.filter-toggle-button {
+        margin-right: 8px;
+        margin-bottom: 0;
+        height: 35px;
+        flex-shrink: 0;
+        background: #97916e;
+        color: white;
+        border: 1px solid #97916e;
+        border-radius: 2px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .step-guide-panel-step3 .filter-label.filter-toggle-button:hover {
+        background: #8b8565;
+        border-color: #8b8565;
+    }
+
+    .step-guide-panel-step3 .filter-label.filter-toggle-button i {
+        font-size: 14px;
+    }
+
+    .step-guide-panel-step3 .filter-buttons-wrapper {
+        position: relative;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        overflow: hidden;
+    }
+
+    .step-guide-panel-step3 .filter-nav-button {
+        display: none !important;
+    }
+
+    .step-guide-panel-step3 .filter-buttons {
+        height: 35px;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+        margin-right: 0 !important;
+        flex: 1;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        padding-right: 15px;
+        position: relative;
+    }
+
+    .step-guide-panel-step3 .filter-buttons::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* 4번째 버튼이 살짝 보이도록 오버레이 */
+    .step-guide-panel-step3 .filter-buttons-wrapper::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 25px;
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.95));
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    /* 모바일에서만 필터 네비게이션 버튼 표시 */
+    .step-guide-panel-step3 .filter-nav-button {
+        display: flex;
+    }
+
+    .step-guide-panel-step3 .filter-button {
+        min-width: calc(40.333% - 4px);
+        max-width: calc(33.333% - 4px);
+        padding: 8px 10px;
+        font-size: 11px;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%) !important;
+        border: 1px solid #d0d0d0 !important;
+        border-radius: 2px !important;
+        color: #333 !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+
+
+    .step-guide-panel-step3 .filter-button:hover {
+        background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%) !important;
+        border-color: #d0d0d0 !important;
+        transform: none !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .step-guide-panel-step3 .filter-button.active {
+        background: #97916e !important;
+        border-color: #97916e !important;
+        color: white !important;
+        box-shadow: 0 3px 8px rgba(112, 150, 78, 0.4) !important;
+    }
+
+    .step-guide-panel-step3 .filter-button.active:hover {
+        background: #97916e !important;
+        border-color: #97916e !important;
+    }
+
+    .step-guide-panel-step3 .step-result-actions .download-button {
+        position: absolute !important;
+        right: -10px !important;
+        bottom: 65px !important;
+        left: auto !important;
+        margin-top: 0 !important;
+        margin-right: 0 !important;
+        width: auto;
+        max-width: none;
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+        z-index: 20 !important;
+    }
+
+    .step-guide-panel-step3 .preview-container {
+        position: relative;
+    }
+
+    .step-guide-panel-step3 .preview-container .download-button {
+        position: absolute !important;
+        right: 4px !important;
+        bottom: 80px !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+        margin: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+        z-index: 20 !important;
+    }
+
+    /* 모바일에서 모든 호버 효과 제거 */
+    .step-guide-panel-step3 .preview-container .download-button:hover {
+        transform: none !important;
+        box-shadow: 0 2px 8px #70964e !important;
+    }
+
+    .step-result-actions .download-button:hover {
+        transform: none !important;
+        box-shadow: 0 2px 8px #70964e !important;
+    }
+
+    .upload-area:hover {
+        transform: none !important;
+        border-color: #f8f8f800 !important;
+        background: #f8f6f683 !important;
+        animation: gentleJump 7s ease-in-out infinite !important;
+    }
+
+    .remove-button:hover {
+        transform: none !important;
+        background: rgba(238, 15, 15, 0.9) !important;
+    }
+
+    .step-actions button:hover,
+    .step-link-button:hover {
+        transform: none !important;
+        box-shadow: 0 6px 16px rgba(176, 137, 104, 0.25) !important;
+    }
+
+    .background-button:hover {
+        transform: none !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .step-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .step-actions button,
+    .step-link-button {
+        padding: 6px 14px;
+        font-size: 12px;
+    }
+
+    .upload-area {
+        padding: 24px 16px;
+        min-height: 200px;
+    }
+
+    .upload-icon {
+        font-size: 48px;
+    }
+
+    .upload-icon img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .upload-text {
+        font-size: 15px;
+    }
+
+    .upload-subtext {
+        font-size: 12px;
+    }
+
+    .preview-image {
+        max-height: 100%;
+    }
+
+    .remove-button {
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
+    .step-background-selector {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-rows: repeat(2, 1fr) !important;
+        gap: 12px;
+        margin-top: 12px;
+        width: 100%;
+        max-width: 200px;
+        margin-left: auto;
+        margin-right: auto;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+    }
+
+    .step-background-selector .background-button {
+        width: 100% !important;
+        min-height: 80px;
+        aspect-ratio: 1;
+        flex: 0 0 calc(50% - 6px) !important;
+    }
+
+    .background-hover-label {
+        font-size: 11px;
+        padding: 6px;
+    }
+
+    .filter-buttons-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .filter-label {
+        font-size: 13px;
+    }
+
+    .filter-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .filter-button {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    .download-button {
+        width: 100%;
+        max-width: 200px;
+        padding: 10px 16px !important;
+        font-size: 14px !important;
+    }
+
+    /* 커스텀 피팅 모바일 추가 조정 */
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .step-result-actions {
+        position: static !important;
+        transform: none !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 12px !important;
+        margin-top: 16px !important;
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-buttons-container {
+        flex-direction: row !important;
+        align-items: center !important;
+        margin-right: 0 !important;
+        margin-top: 0 !important;
+        width: 100%;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-label {
+        margin-right: 0 !important;
+        margin-bottom: 0;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-buttons {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        margin-right: 0 !important;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .filter-button {
+        min-width: 70px;
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel-step3 .step-result-actions .download-button {
+        margin-top: 0 !important;
+        margin-right: 0 !important;
+        position: static !important;
+        width: auto;
+        max-width: none;
+    }
+
+    /* 커스텀 피팅 preview-container 모바일 조정 */
+    .fitting-container .content-wrapper.custom-wrapper .step-guide-panel .preview-container {
+        margin-top: 0 !important;
+        height: 300px !important;
+        max-height: 300px !important;
+        border-width: 8px !important;
+    }
+
+    .fitting-container .content-wrapper.custom-wrapper .step-guide-panel .preview-container .preview-image {
+        width: 100% !important;
+    }
+
+    .content-wrapper.custom-wrapper .step-guide-panel {
+        margin-top: 0 !important;
+    }
+}
+
+/* ============================================
+   작은 모바일 버전 스타일 (max-width: 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+    .step-guide-panel {
+        padding: 20px 12px;
+        gap: 10px;
+    }
+
+    .step-badge {
+        font-size: 11px;
+        padding: 4px 12px;
+    }
+
+    .step-title {
+        font-size: 16px;
+    }
+
+    .step-description {
+        font-size: 12px;
+    }
+
+    .step-guide-panel .upload-area,
+    .step-guide-panel .preview-container {
+        height: 200px !important;
+        max-height: 220px !important;
+    }
+
+    .fitting-container .step-guide-panel .preview-container {
+        height: 220px !important;
+        max-height: 220px !important;
+    }
+
+    .step-guide-panel-step2 .step-panel-content .preview-container,
+    .step-guide-panel-step2 .step-panel-content .upload-area {
+        height: 220px !important;
+        max-height: 220px !important;
+    }
+
+    .step-background-selector {
+        gap: 10px;
+        max-width: 180px;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-rows: repeat(2, 1fr) !important;
+    }
+
+    .step-background-selector .background-button {
+        min-height: 80px;
+        aspect-ratio: 1;
+        flex: 0 0 calc(50% - 5px) !important;
+    }
+
+    .upload-icon {
+        font-size: 40px;
+    }
+
+    .upload-icon img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .upload-text {
+        font-size: 14px;
+    }
+
+    .upload-subtext {
+        font-size: 11px;
+    }
+
+    .filter-button {
+        padding: 5px 10px;
+        font-size: 10px;
+        min-width: 60px;
+    }
+
+    .step-actions button,
+    .step-link-button {
+        padding: 5px 12px;
+        font-size: 11px;
+    }
+
+}
+
+/* ============================================
+   웹 버전 - Background Selector
+   ============================================ */
+.background-selector {
+    position: absolute;
+    right: -60px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    z-index: 10;
+}
+
+.background-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.background-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    border-color: white;
+}
+
+.background-button.active {
+    border-color: white;
+    box-shadow: 0 4px 12px rgba(44, 44, 44, 0.4);
+}
+
+.background-button.active:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(44, 44, 44, 0.4);
+}
+
+.background-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.background-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2c2c2c;
+    transition: all 0.3s ease;
+}
+
+.background-button.active .background-dot {
+    background: white;
+}
+
+.background-button:disabled {
+    cursor: default;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.background-button:disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   웹 버전 - Background Selector
+   ============================================ */
+.background-selector {
+    font-size: 16px;
+}
+
+.android .fitting-container .upload-subtext {
+    font-size: 12px;
+}
+
+.android .fitting-container .step-guide-panel .step-description,
+.android .fitting-container .step-guide-panel .step-tip {
+    font-size: 13px;
+}
+
+.background-hover-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.background-button:hover .background-hover-label {
+    opacity: 1;
+}
+
+.background-button.active .background-hover-label {
+    opacity: 0;
+}
+
+.background-button.active:hover .background-hover-label {
+    opacity: 0;
+}
+
+/* active가 아닌 버튼은 호버 효과 유지 */
+.background-button:not(.active):hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    border-color: white;
+}
+
+.step-background-selector {
+    position: static;
+    right: auto;
+    top: auto;
+    transform: none;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    margin-top: 16px;
+}
+
+.step-background-selector .background-button {
+    width: 90px;
+    height: 90px;
+    border-radius: 16px;
+}
+
+.step-background-selector .background-button img {
+    border-radius: 16px;
+}
+
+.step-background-selector .background-hover-label {
+    border-radius: 16px;
+}
+
+/* Validation Overlay and Loader */
+.upload-area.processing {
+    position: relative;
+}
+
+.validation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    border-radius: inherit;
+    z-index: 1;
+}
+
+.validation-loader-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 20px !important;
+    pointer-events: none;
+    width: auto !important;
+    height: auto !important;
+}
+
+.validation-loader-wrapper .loader {
+    order: 1 !important;
+}
+
+.validation-loader-wrapper .upload-text {
+    order: 2 !important;
+}
+
+.validation-loader-wrapper .upload-text {
+    font-size: 17px;
+    color: #212121;
+    margin: 0;
+}
+
+/* Loader Style */
+.validation-loader-wrapper .loader,
+.step-guide-panel-loader-wrapper .loader {
+    position: relative !important;
+    width: 160px !important;
+    height: 160px !important;
+    border: 4px solid #fcfafa94 !important;
+    overflow: hidden !important;
+    border-radius: 50% !important;
+    box-shadow: -5px -5px 5px rgba(255, 255, 255, 0.1),
+        10px 10px 10px rgba(0, 0, 0, 0.4),
+        inset -5px -5px 5px rgba(255, 255, 255, 0.2),
+        inset 10px 10px 10px rgba(0, 0, 0, 0.4) !important;
+    max-width: none !important;
+    color: inherit !important;
+    font-size: inherit !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+}
+
+.validation-loader-wrapper .loader::before,
+.step-guide-panel-loader-wrapper .loader::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 25px !important;
+    left: 25px !important;
+    right: 25px !important;
+    bottom: 25px !important;
+    z-index: 10 !important;
+    background: #fcfafa94 !important;
+    border-radius: 50% !important;
+    border: 2px solid #fcfafa94 !important;
+    box-shadow: inset -2px -2px 5px rgba(255, 255, 255, 0.2),
+        inset 3px 3px 5px rgba(0, 0, 0, 0.5) !important;
+    width: auto !important;
+    height: auto !important;
+    filter: none !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+.validation-loader-wrapper .loader::after,
+.step-guide-panel-loader-wrapper .loader::after {
+    display: none !important;
+}
+
+.validation-loader-wrapper .loader span,
+.step-guide-panel-loader-wrapper .loader span {
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 50% !important;
+    background-image: linear-gradient(-225deg,
+            #ff7402 0%,
+            #ffe700 50%,
+            #fff55e 100%) !important;
+    filter: blur(20px) !important;
+    z-index: -1 !important;
+    animation: animate 0.5s linear infinite !important;
+    top: 0 !important;
+    left: 0 !important;
+    transition: none !important;
+}
+
+@keyframes animate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Step Guide Panel Validation Overlay */
+.step-guide-panel.validating {
+    position: relative;
+}
+
+.step-guide-panel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    border-radius: inherit;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.step-guide-panel-loader-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 101;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 20px !important;
+    pointer-events: none;
+    width: auto !important;
+    height: auto !important;
+}
+
+.step-guide-panel-loader-wrapper .loader {
+    order: 1 !important;
+}
+
+.step-guide-panel-loader-wrapper .upload-text {
+    order: 2 !important;
+}
+
+.step-guide-panel-loader-wrapper .upload-text {
+    font-size: 17px;
+    color: #212121;
+    margin: 0;
+    text-align: center;
+}
+
+/* 노트북 화면 height 강제 적용 - 파일 끝에 배치하여 최우선 적용 */
+@media (min-width: 48.0625rem) and (max-width: 90rem) {
+
+    /* image-upload 컨테이너 height 증가 및 하단 공백 제거 */
+    .fitting-container .image-upload {
+        height: 550px !important;
+        min-height: 550px !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* step-panel-content 하단 공백 제거 */
+    .fitting-container .step-guide-panel-step2 .step-panel-content,
+    .fitting-container .step-guide-panel-step3 .step-panel-content {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* image-upload-wrapper 하단 공백 제거 */
+    .fitting-container .step-guide-panel .image-upload-wrapper,
+    .fitting-container .step-guide-panel-step2 .step-panel-content .image-upload-wrapper,
+    .fitting-container .step-guide-panel-step3 .step-panel-content .image-upload-wrapper {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* 모든 하단 공백 강제 제거 */
+    .fitting-container * {
+        box-sizing: border-box;
+    }
+
+    .fitting-container .content-wrapper>*:last-child {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .fitting-container .right-container>*:last-child {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* Step1, Step3 preview-container - 크기 축소하여 하단 잘림 방지 */
+    .fitting-container .step-guide-panel .preview-container,
+    .fitting-container .step-guide-panel-step3 .preview-container,
+    .fitting-container .step-guide-panel:not(.step-guide-panel-step2) .preview-container {
+        height: 380px !important;
+        max-height: 380px !important;
+        min-height: 380px !important;
+    }
+
+    /* Step1, Step3 upload-area - 크기 축소하여 하단 잘림 방지 */
+    .fitting-container .step-guide-panel .upload-area,
+    .fitting-container .step-guide-panel:not(.step-guide-panel-step2) .upload-area {
+        height: 380px !important;
+        max-height: 380px !important;
+        min-height: 380px !important;
+    }
+
+    /* Step2 preview-container, upload-area - 크기 축소하여 하단 잘림 방지 */
+    .fitting-container .step-guide-panel-step2 .step-panel-content .preview-container,
+    .fitting-container .step-guide-panel-step2 .step-panel-content .upload-area,
+    .fitting-container .step-guide-panel-step2 .preview-container,
+    .fitting-container .step-guide-panel-step2 .upload-area {
+        height: 380px !important;
+        max-height: 380px !important;
+        min-height: 380px !important;
+    }
+}

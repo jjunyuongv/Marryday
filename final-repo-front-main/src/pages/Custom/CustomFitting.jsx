@@ -1,14 +1,20 @@
 import { useState, useRef, useEffect } from 'react'
 import Lottie from 'lottie-react'
 import { MdOutlineDownload } from 'react-icons/md'
-import Modal from '../../components/Modal'
-import ReviewModal from '../../components/ReviewModal'
-import { customV4MatchImage, applyImageFilter, validatePerson } from '../../utils/api'
+import Modal from '../../components/Modal/Modal'
+import ReviewModal from '../../components/ReviewModal/ReviewModal'
+import ImageSelectionModal from '../../components/ImageSelectionModal/ImageSelectionModal'
+import { customV5V5MatchImage, applyImageFilter, validatePerson, checkDress } from '../../utils/api'
 import { isReviewCompleted } from '../../utils/cookies'
 import '../../styles/App.css'
-import '../../styles/General/ImageUpload.css'
-import '../../styles/Custom/CustomUpload.css'
-import '../../styles/Custom/CustomResult.css'
+import '../General/ImageUpload.css'
+import './CustomUpload.css'
+import './CustomResult.css'
+
+// trace_id 생성 함수
+const generateTraceId = () => {
+    return `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
 
 const CustomFitting = ({ onBackToMain }) => {
     // Custom Fitting 상태
@@ -20,12 +26,29 @@ const CustomFitting = ({ onBackToMain }) => {
     const [isApplyingFilter, setIsApplyingFilter] = useState(false)
     const [isMatching, setIsMatching] = useState(false)
     const [isValidatingPerson, setIsValidatingPerson] = useState(false)
+    const [isCheckingDress, setIsCheckingDress] = useState(false)
+    const [dressCheckResult, setDressCheckResult] = useState(null) // boolean: true면 드레스, false면 드레스 아님
     const [loadingAnimation, setLoadingAnimation] = useState(null)
     const [errorModalOpen, setErrorModalOpen] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
     const [currentStep, setCurrentStep] = useState(1)
     const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
     const [progress, setProgress] = useState(0)
+    const [imageSelectionModalOpen, setImageSelectionModalOpen] = useState(false)
+    const [resultImages, setResultImages] = useState([]) // 두 개의 결과 이미지 저장
+    
+    // 프로파일링 관련 상태
+    const [traceId, setTraceId] = useState(null)
+    const profileTimingsRef = useRef({
+        bg_select_ms: null,
+        person_upload_ms: null,
+        person_validate_ms: null,
+        dress_upload_ms: null,
+        dress_validate_ms: null,
+        dress_cutout_ms: null,
+        compose_click_to_response_ms: null,
+        result_image_load_ms: null
+    })
 
     // 로딩 메시지 목록 (순차적으로 표시, 마지막은 고정)
     const loadingMessages = [
@@ -132,6 +155,19 @@ const CustomFitting = ({ onBackToMain }) => {
             .catch(error => console.error('Lottie 로드 실패:', error))
     }, [])
 
+    // 이미지 선택 모달이 열릴 때 body에 클래스 추가하여 헤더 숨기기
+    useEffect(() => {
+        if (imageSelectionModalOpen) {
+            document.body.classList.add('image-selection-modal-open')
+        } else {
+            document.body.classList.remove('image-selection-modal-open')
+        }
+
+        return () => {
+            document.body.classList.remove('image-selection-modal-open')
+        }
+    }, [imageSelectionModalOpen])
+
     // 배경 이미지 URL을 File 객체로 변환하는 함수
     const urlToFile = async (url, filename = 'background.jpg') => {
         try {
@@ -163,9 +199,25 @@ const CustomFitting = ({ onBackToMain }) => {
 
     // 배경 선택 핸들러
     const handleBackgroundSelect = (index) => {
+        // trace_id 생성 (피팅 1회 시작)
+        if (!traceId) {
+            const newTraceId = generateTraceId()
+            setTraceId(newTraceId)
+        }
+        
+        // 배경 선택 시간 측정 시작
+        if (profileTimingsRef.current.bg_select_ms === null) {
+            profileTimingsRef.current.bg_select_start = Date.now()
+        }
+        
         setSelectedBackgroundIndex(index)
         if (currentStep < 2) {
             setCurrentStep(2)
+        }
+        
+        // 배경 선택 완료 시간 측정
+        if (profileTimingsRef.current.bg_select_start) {
+            profileTimingsRef.current.bg_select_ms = Date.now() - profileTimingsRef.current.bg_select_start
         }
     }
 
@@ -224,25 +276,96 @@ const CustomFitting = ({ onBackToMain }) => {
             const backgroundImageUrl = backgroundImages[selectedBackgroundIndex]
             const backgroundFile = await urlToFile(backgroundImageUrl, `background${selectedBackgroundIndex + 1}.jpg`)
 
-            const result = await customV4MatchImage(fullBody, dress, backgroundFile)
+            // 합성 클릭 시간 측정 시작
+            const composeClickStart = Date.now()
+            
+            const result = await customV5V5MatchImage(
+                fullBody, 
+                dress, 
+                backgroundFile,
+                traceId,
+                profileTimingsRef.current
+            )
+            
+            // 합성 클릭~응답 수신 시간 측정 완료
+            profileTimingsRef.current.compose_click_to_response_ms = Date.now() - composeClickStart
+            
+            // 의상 누끼 처리 시간은 백엔드에서 측정되므로 프론트에서는 측정하지 않음
+            // (프론트에서 기다리는 시간은 compose_click_to_response_ms에 포함됨)
 
-            if (result.success && result.result_image) {
-                setProgress(100)
-                setCustomResultImage(result.result_image)
-                setOriginalResultImage(result.result_image) // 원본 이미지 저장
-                setSelectedFilter('none') // 필터 초기화
-                setIsMatching(false)
-                setCurrentStep(3)
+            setProgress(100)
+            setSelectedFilter('none') // 필터 초기화
+            setIsMatching(false)
+            setCurrentStep(3)
+
+            // 결과 이미지 로딩 시간 측정 시작
+            const resultImageLoadStart = Date.now()
+
+            // /tryon/compare/custom 엔드포인트는 V4V5CustomCompareResponse를 반환 (v4_result와 v5_result 포함)
+            const images = []
+
+            // v4_result에서 이미지 추출
+            if (result.v4_result) {
+                const v4Result = result.v4_result
+                const v4Image = v4Result.result_image
+                if (v4Image && typeof v4Image === 'string' && v4Image.trim().length > 0) {
+                    images.push(v4Image)
+                }
+            }
+
+            // v5_result에서 이미지 추출
+            if (result.v5_result) {
+                const v5Result = result.v5_result
+                const v5Image = v5Result.result_image
+                if (v5Image && typeof v5Image === 'string' && v5Image.trim().length > 0) {
+                    images.push(v5Image)
+                }
+            }
+
+            // 두 개의 이미지가 있는 경우 모달 표시
+            if (images.length >= 2) {
+                setResultImages(images)
+                setImageSelectionModalOpen(true)
+                // 결과 이미지 로딩 시간 측정 완료 (화면 표시 완료)
+                setTimeout(() => {
+                    profileTimingsRef.current.result_image_load_ms = Date.now() - resultImageLoadStart
+                }, 100)
+            } else if (images.length === 1) {
+                // 하나의 이미지만 있는 경우
+                setCustomResultImage(images[0])
+                setOriginalResultImage(images[0])
+                
+                // 결과 이미지 로딩 시간 측정 완료 (화면 표시 완료)
+                setTimeout(() => {
+                    profileTimingsRef.current.result_image_load_ms = Date.now() - resultImageLoadStart
+                }, 100)
 
                 // 리뷰 모달 표시 (1번만, 쿠키 확인)
                 if (!isReviewCompleted('custom')) {
-                    // 결과 이미지가 화면에 표시된 후 2~3초 후 모달 표시
+                    setTimeout(() => {
+                        setReviewModalOpen(true)
+                    }, 3000)
+                }
+            } else if (result.success && result.result_image) {
+                // 단일 이미지 응답인 경우 (기존 동작 유지, 호환성)
+                setCustomResultImage(result.result_image)
+                setOriginalResultImage(result.result_image)
+                
+                // 결과 이미지 로딩 시간 측정 완료 (화면 표시 완료)
+                setTimeout(() => {
+                    profileTimingsRef.current.result_image_load_ms = Date.now() - resultImageLoadStart
+                }, 100)
+
+                // 리뷰 모달 표시 (1번만, 쿠키 확인)
+                if (!isReviewCompleted('custom')) {
                     setTimeout(() => {
                         setReviewModalOpen(true)
                     }, 3000)
                 }
             } else {
-                throw new Error(result.message || '매칭에 실패했습니다.')
+                // 이미지가 없는 경우 에러 메시지 확인
+                const errorMsg = result.message || result.v4_result?.message || result.v5_result?.message || '결과 이미지를 찾을 수 없습니다.'
+                throw new Error(errorMsg)
             }
         } catch (error) {
             console.error('커스텀 매칭 중 오류 발생:', error)
@@ -262,10 +385,26 @@ const CustomFitting = ({ onBackToMain }) => {
     }
 
     const handleFullBodyFile = async (file) => {
+        // trace_id 생성 (피팅 1회 시작)
+        if (!traceId) {
+            const newTraceId = generateTraceId()
+            setTraceId(newTraceId)
+        }
+        
+        // 인물 업로드 시간 측정 시작
+        const personUploadStart = Date.now()
+        
         // 사람 감지 검증
         try {
             setIsValidatingPerson(true)
+            
+            // 인물 검증 시간 측정 시작
+            const personValidateStart = Date.now()
+            
             const validationResult = await validatePerson(file)
+            
+            // 인물 검증 시간 측정 완료
+            profileTimingsRef.current.person_validate_ms = Date.now() - personValidateStart
 
             // 동물이 감지된 경우
             if (validationResult.is_animal) {
@@ -288,6 +427,9 @@ const CustomFitting = ({ onBackToMain }) => {
                 setFullBodyPreview(reader.result)
                 handleFullBodyUpload(file)
                 setIsValidatingPerson(false)
+                
+                // 인물 업로드 시간 측정 완료
+                profileTimingsRef.current.person_upload_ms = Date.now() - personUploadStart
             }
             reader.readAsDataURL(file)
         } catch (error) {
@@ -363,13 +505,71 @@ const CustomFitting = ({ onBackToMain }) => {
         }
     }
 
-    const handleDressFile = (file) => {
+    const handleDressFile = async (file) => {
+        // trace_id 생성 (피팅 1회 시작)
+        if (!traceId) {
+            const newTraceId = generateTraceId()
+            setTraceId(newTraceId)
+        }
+        
+        // 드레스 업로드 시간 측정 시작
+        const dressUploadStart = Date.now()
+        
         const reader = new FileReader()
         reader.onloadend = () => {
             setDressPreview(reader.result)
-            handleCustomDressUpload(file)
         }
         reader.readAsDataURL(file)
+
+        // 드레스 체크 수행
+        setIsCheckingDress(true)
+        setDressCheckResult(null)
+        
+        // 드레스 검증 시간 측정 시작
+        const dressValidateStart = Date.now()
+        
+        try {
+            console.log('[프론트] 드레스 체크 시작:', file.name, file.size)
+            const checkResult = await checkDress(file, 'gpt-4o-mini', 'fast')
+            console.log('[프론트] 드레스 체크 결과:', checkResult)
+            
+            // 드레스 검증 시간 측정 완료
+            profileTimingsRef.current.dress_validate_ms = Date.now() - dressValidateStart
+            
+            if (checkResult.success && checkResult.result) {
+                const isDress = checkResult.result.dress
+                setDressCheckResult(isDress)
+
+                // 드레스가 아닌 경우 모달로 알림
+                if (!isDress) {
+                    setErrorMessage('드레스 사진을 넣어주세요')
+                    setErrorModalOpen(true)
+                    // 이미지 미리보기 제거
+                    setDressPreview(null)
+                    handleCustomDressUpload(null)
+                    if (dressInputRef.current) {
+                        dressInputRef.current.value = ''
+                    }
+                    setIsCheckingDress(false)
+                    return
+                }
+            } else {
+                setDressCheckResult(null)
+            }
+        } catch (error) {
+            setDressCheckResult(null)
+            
+            // 드레스 검증 시간 측정 완료 (에러 발생 시에도)
+            profileTimingsRef.current.dress_validate_ms = Date.now() - dressValidateStart
+        } finally {
+            setIsCheckingDress(false)
+        }
+
+        // 드레스 이미지 설정 (체크 결과와 관계없이 업로드 허용)
+        handleCustomDressUpload(file)
+        
+        // 드레스 업로드 시간 측정 완료
+        profileTimingsRef.current.dress_upload_ms = Date.now() - dressUploadStart
     }
 
     useEffect(() => {
@@ -419,6 +619,8 @@ const CustomFitting = ({ onBackToMain }) => {
 
     const handleDressRemove = () => {
         setDressPreview(null)
+        setDressCheckResult(null)
+        setIsCheckingDress(false)
         handleCustomDressUpload(null)
         // 이미지 삭제 시 매칭 결과 초기화 및 STEP 2로 이동
         if (customResultImage) {
@@ -777,7 +979,7 @@ const CustomFitting = ({ onBackToMain }) => {
                     <div className="step-badge">STEP 1</div>
                     <h3 className="step-title">피팅 배경을 먼저 선택해보세요</h3>
                     <p className="step-description">
-                        아래 배경 버튼을 눌러 웨딩 피팅 공간의 무드를 선택하면{isMobile && <br />} STEP 2로 이동합니다.
+                        아래 배경 버튼을 눌러 웨딩 피팅 공간의 배경을 선택하면{isMobile && <br />} STEP 2로 이동합니다.
                     </p>
                     {renderBackgroundButtons()}
                     <p className="step-tip">배경을 선택하면 자동으로 다음 단계가 열려요.</p>
@@ -924,19 +1126,29 @@ const CustomFitting = ({ onBackToMain }) => {
                                         <p className="upload-text">드레스 사진을 업로드 해주세요</p>
                                     </div>
                                 ) : (
-                                    <div
-                                        className={`custom-preview-container ${isDraggingDress ? 'dragging' : ''}`}
-                                        onDragOver={handleDressDragOver}
-                                        onDragLeave={handleDressDragLeave}
-                                        onDrop={handleDressDrop}
-                                    >
-                                        <img src={dressPreview} alt="Dress" className="custom-preview-image" />
-                                        {!isMatching && (
-                                            <button className="custom-remove-button" onClick={handleDressRemove}>
-                                                ✕
-                                            </button>
-                                        )}
-                                    </div>
+                                    <>
+                                        <div
+                                            className={`custom-preview-container ${isDraggingDress ? 'dragging' : ''} ${isCheckingDress ? 'processing' : ''}`}
+                                            onDragOver={handleDressDragOver}
+                                            onDragLeave={handleDressDragLeave}
+                                            onDrop={handleDressDrop}
+                                        >
+                                            <img src={dressPreview} alt="Dress" className="custom-preview-image" />
+                                            {isCheckingDress && (
+                                                <>
+                                                    <div className="validation-overlay"></div>
+                                                    <div className="validation-loader-wrapper">
+                                                        <p className="upload-text">드레스를 확인 중입니다.<br />잠시만 기다려주세요</p>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {!isMatching && !isCheckingDress && (
+                                                <button className="custom-remove-button" onClick={handleDressRemove}>
+                                                    ✕
+                                                </button>
+                                            )}
+                                        </div>
+                                    </>
                                 )}
                             </div>
 
@@ -980,6 +1192,26 @@ const CustomFitting = ({ onBackToMain }) => {
                     </div>
                 </div>
             )}
+
+            {/* 리뷰 모달 */}
+            {/* 이미지 선택 모달 */}
+            <ImageSelectionModal
+                isOpen={imageSelectionModalOpen}
+                onClose={() => setImageSelectionModalOpen(false)}
+                images={resultImages}
+                onSelect={(selectedImage) => {
+                    setCustomResultImage(selectedImage)
+                    setOriginalResultImage(selectedImage)
+                    setImageSelectionModalOpen(false)
+
+                    // 리뷰 모달 표시 (1번만, 쿠키 확인)
+                    if (!isReviewCompleted('custom')) {
+                        setTimeout(() => {
+                            setReviewModalOpen(true)
+                        }, 3000)
+                    }
+                }}
+            />
 
             {/* 리뷰 모달 */}
             <ReviewModal

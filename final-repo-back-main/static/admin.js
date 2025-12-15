@@ -2,9 +2,18 @@
 let currentPage = 1;
 const itemsPerPage = 20;
 let currentSearchModel = null;
-let currentTab = 'synthesis'; // 'synthesis', 'body', or 'reviews'
+let currentTab = 'synthesis'; // 'synthesis', 'body', 'reviews', 'synthesis-stats', 'visitor-stats', 'custom-fitting', 'profile-logs', 'dress-fitting', 'usage-stats'
 let currentBodyPage = 1;
 let currentReviewsPage = 1;
+let currentSynthesisStatsPage = 1;
+let currentVisitorStatsPage = 1;
+let currentCustomFittingPage = 1;
+let currentProfileLogsPage = 1;
+let currentDressFittingPage = 1;
+let currentDressFittingCountsPage = 1;
+let currentDressFittingView = 'logs'; // 'logs' 또는 'counts'
+let currentSearchDate = null; // 날짜 검색용
+let currentProfileEndpoint = null; // 프로파일링 로그 엔드포인트 필터
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', async () => {
@@ -64,6 +73,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabSynthesis = document.getElementById('tabSynthesis');
     const tabBodyAnalysis = document.getElementById('tabBodyAnalysis');
     const tabReviews = document.getElementById('tabReviews');
+    const tabSynthesisStats = document.getElementById('tabSynthesisStats');
+    const tabVisitorStats = document.getElementById('tabVisitorStats');
+    const tabCustomFitting = document.getElementById('tabCustomFitting');
+    const tabProfileLogs = document.getElementById('tabProfileLogs');
+    const tabDressFitting = document.getElementById('tabDressFitting');
+    const tabUsageStats = document.getElementById('tabUsageStats');
 
     if (tabSynthesis) {
         tabSynthesis.addEventListener('click', () => switchTab('synthesis'));
@@ -74,6 +89,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (tabReviews) {
         tabReviews.addEventListener('click', () => switchTab('reviews'));
     }
+    if (tabSynthesisStats) {
+        tabSynthesisStats.addEventListener('click', () => switchTab('synthesis-stats'));
+    }
+    if (tabVisitorStats) {
+        tabVisitorStats.addEventListener('click', () => switchTab('visitor-stats'));
+    }
+    if (tabCustomFitting) {
+        tabCustomFitting.addEventListener('click', () => switchTab('custom-fitting'));
+    }
+    if (tabProfileLogs) {
+        tabProfileLogs.addEventListener('click', () => switchTab('profile-logs'));
+    }
+    if (tabDressFitting) {
+        tabDressFitting.addEventListener('click', () => switchTab('dress-fitting'));
+    }
+    if (tabUsageStats) {
+        tabUsageStats.addEventListener('click', () => switchTab('usage-stats'));
+    }
+    if (tabUsageStats) {
+        tabUsageStats.addEventListener('click', () => switchTab('usage-stats'));
+    }
 
     // 검색 입력 필드에 Enter 키 이벤트 추가
     const searchInput = document.getElementById('search-input');
@@ -81,6 +117,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 handleSearch();
+            }
+        });
+    }
+
+    // 날짜 검색 입력 필드에 Enter 키 이벤트 추가
+    const dateSearchInput = document.getElementById('date-search-input');
+    if (dateSearchInput) {
+        dateSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleDateSearch();
             }
         });
     }
@@ -93,17 +139,35 @@ function switchTab(tab) {
     const synthesisSection = document.getElementById('synthesis-logs-section');
     const bodySection = document.getElementById('body-logs-section');
     const reviewsSection = document.getElementById('reviews-logs-section');
+    const synthesisStatsSection = document.getElementById('synthesis-stats-section');
+    const visitorStatsSection = document.getElementById('visitor-stats-section');
+    const customFittingSection = document.getElementById('custom-fitting-logs-section');
+    const profileLogsSection = document.getElementById('profile-logs-section');
+    const dressFittingSection = document.getElementById('dress-fitting-logs-section');
+    const usageStatsSection = document.getElementById('usage-stats-section');
     const tabSynthesis = document.getElementById('tabSynthesis');
     const tabBodyAnalysis = document.getElementById('tabBodyAnalysis');
     const tabReviews = document.getElementById('tabReviews');
+    const tabSynthesisStats = document.getElementById('tabSynthesisStats');
+    const tabVisitorStats = document.getElementById('tabVisitorStats');
+    const tabCustomFitting = document.getElementById('tabCustomFitting');
+    const tabProfileLogs = document.getElementById('tabProfileLogs');
+    const tabDressFitting = document.getElementById('tabDressFitting');
     const sectionTitle = document.getElementById('section-title');
     const logsCountLabel = document.getElementById('logs-count-label');
-    const searchContainer = document.querySelector('.search-container');
+    const searchContainerText = document.getElementById('search-container-text');
+    const searchContainerDate = document.getElementById('search-container-date');
 
     // 모든 섹션 숨기기
     if (synthesisSection) synthesisSection.style.display = 'none';
     if (bodySection) bodySection.style.display = 'none';
     if (reviewsSection) reviewsSection.style.display = 'none';
+    if (synthesisStatsSection) synthesisStatsSection.style.display = 'none';
+    if (visitorStatsSection) visitorStatsSection.style.display = 'none';
+    if (customFittingSection) customFittingSection.style.display = 'none';
+    if (profileLogsSection) profileLogsSection.style.display = 'none';
+    if (dressFittingSection) dressFittingSection.style.display = 'none';
+    if (usageStatsSection) usageStatsSection.style.display = 'none';
 
     // 모든 탭 버튼 초기화
     if (tabSynthesis) {
@@ -121,6 +185,36 @@ function switchTab(tab) {
         tabReviews.style.background = '#fff';
         tabReviews.style.color = '#333';
     }
+    if (tabSynthesisStats) {
+        tabSynthesisStats.classList.remove('active');
+        tabSynthesisStats.style.background = '#fff';
+        tabSynthesisStats.style.color = '#333';
+    }
+    if (tabVisitorStats) {
+        tabVisitorStats.classList.remove('active');
+        tabVisitorStats.style.background = '#fff';
+        tabVisitorStats.style.color = '#333';
+    }
+    if (tabCustomFitting) {
+        tabCustomFitting.classList.remove('active');
+        tabCustomFitting.style.background = '#fff';
+        tabCustomFitting.style.color = '#333';
+    }
+    if (tabProfileLogs) {
+        tabProfileLogs.classList.remove('active');
+        tabProfileLogs.style.background = '#fff';
+        tabProfileLogs.style.color = '#333';
+    }
+    if (tabDressFitting) {
+        tabDressFitting.classList.remove('active');
+        tabDressFitting.style.background = '#fff';
+        tabDressFitting.style.color = '#333';
+    }
+    if (tabUsageStats) {
+        tabUsageStats.classList.remove('active');
+        tabUsageStats.style.background = '#fff';
+        tabUsageStats.style.color = '#333';
+    }
 
     if (tab === 'synthesis') {
         if (synthesisSection) synthesisSection.style.display = 'block';
@@ -129,9 +223,12 @@ function switchTab(tab) {
             tabSynthesis.style.background = '#007bff';
             tabSynthesis.style.color = '#fff';
         }
-        if (sectionTitle) sectionTitle.textContent = '📋 합성 로그 목록';
+        if (sectionTitle) sectionTitle.textContent = '📋 합성 로그';
         if (logsCountLabel) logsCountLabel.textContent = '전체 합성:';
-        if (searchContainer) searchContainer.style.display = 'block';
+        if (searchContainerText) searchContainerText.style.display = 'block';
+        if (searchContainerDate) searchContainerDate.style.display = 'none';
+        // 다른 탭으로 전환 시 날짜 검색 초기화
+        currentSearchDate = null;
         loadLogs(currentPage, currentSearchModel);
     } else if (tab === 'body') {
         if (bodySection) bodySection.style.display = 'block';
@@ -140,9 +237,12 @@ function switchTab(tab) {
             tabBodyAnalysis.style.background = '#007bff';
             tabBodyAnalysis.style.color = '#fff';
         }
-        if (sectionTitle) sectionTitle.textContent = '📊 분석 결과 로그 목록';
+        if (sectionTitle) sectionTitle.textContent = '📊 분석 로그';
         if (logsCountLabel) logsCountLabel.textContent = '전체 분석:';
-        if (searchContainer) searchContainer.style.display = 'none';
+        if (searchContainerText) searchContainerText.style.display = 'none';
+        if (searchContainerDate) searchContainerDate.style.display = 'none';
+        // 다른 탭으로 전환 시 날짜 검색 초기화
+        currentSearchDate = null;
         loadBodyLogs(currentBodyPage);
     } else if (tab === 'reviews') {
         if (reviewsSection) reviewsSection.style.display = 'block';
@@ -151,10 +251,166 @@ function switchTab(tab) {
             tabReviews.style.background = '#007bff';
             tabReviews.style.color = '#fff';
         }
-        if (sectionTitle) sectionTitle.textContent = '⭐ 리뷰 로그 목록';
+        if (sectionTitle) sectionTitle.textContent = '⭐ 리뷰 로그';
         if (logsCountLabel) logsCountLabel.textContent = '전체 리뷰:';
-        if (searchContainer) searchContainer.style.display = 'none';
+        if (searchContainerText) searchContainerText.style.display = 'none';
+        if (searchContainerDate) searchContainerDate.style.display = 'none';
+        // 다른 탭으로 전환 시 날짜 검색 초기화
+        currentSearchDate = null;
         loadReviews(currentReviewsPage);
+    } else if (tab === 'synthesis-stats') {
+        if (synthesisStatsSection) synthesisStatsSection.style.display = 'block';
+        if (tabSynthesisStats) {
+            tabSynthesisStats.classList.add('active');
+            tabSynthesisStats.style.background = '#007bff';
+            tabSynthesisStats.style.color = '#fff';
+        }
+        if (sectionTitle) sectionTitle.textContent = '📈 합성 통계';
+        if (logsCountLabel) logsCountLabel.textContent = '전체 날짜:';
+        if (searchContainerText) searchContainerText.style.display = 'none';
+        if (searchContainerDate) searchContainerDate.style.display = 'block';
+        // 날짜 검색 입력 필드에 현재 검색 날짜 설정
+        const dateSearchInput = document.getElementById('date-search-input');
+        const dateSearchClearButton = document.getElementById('date-search-clear-button');
+        if (dateSearchInput && currentSearchDate) {
+            dateSearchInput.value = currentSearchDate;
+        }
+        if (dateSearchClearButton) {
+            dateSearchClearButton.style.display = currentSearchDate ? 'inline-block' : 'none';
+        }
+        loadDailySynthesisStats(currentSynthesisStatsPage, currentSearchDate);
+    } else if (tab === 'visitor-stats') {
+        if (visitorStatsSection) visitorStatsSection.style.display = 'block';
+        if (tabVisitorStats) {
+            tabVisitorStats.classList.add('active');
+            tabVisitorStats.style.background = '#007bff';
+            tabVisitorStats.style.color = '#fff';
+        }
+        if (sectionTitle) sectionTitle.textContent = '👥 조회수 통계';
+        if (logsCountLabel) logsCountLabel.textContent = '전체 날짜:';
+        if (searchContainerText) searchContainerText.style.display = 'none';
+        if (searchContainerDate) searchContainerDate.style.display = 'block';
+        // 날짜 검색 입력 필드에 현재 검색 날짜 설정
+        const dateSearchInput = document.getElementById('date-search-input');
+        const dateSearchClearButton = document.getElementById('date-search-clear-button');
+        if (dateSearchInput && currentSearchDate) {
+            dateSearchInput.value = currentSearchDate;
+        }
+        if (dateSearchClearButton) {
+            dateSearchClearButton.style.display = currentSearchDate ? 'inline-block' : 'none';
+        }
+        loadDailyVisitorStats(currentVisitorStatsPage, currentSearchDate);
+    } else if (tab === 'custom-fitting') {
+        if (customFittingSection) customFittingSection.style.display = 'block';
+        if (tabCustomFitting) {
+            tabCustomFitting.classList.add('active');
+            tabCustomFitting.style.background = '#007bff';
+            tabCustomFitting.style.color = '#fff';
+        }
+        if (sectionTitle) sectionTitle.textContent = '👔 커스텀피팅로그';
+        if (logsCountLabel) logsCountLabel.textContent = '전체 커스텀피팅:';
+        if (searchContainerText) searchContainerText.style.display = 'none';
+        if (searchContainerDate) searchContainerDate.style.display = 'none';
+        // 다른 탭으로 전환 시 날짜 검색 초기화
+        currentSearchDate = null;
+        loadCustomFittingLogs(currentCustomFittingPage);
+    } else if (tab === 'profile-logs') {
+        if (profileLogsSection) profileLogsSection.style.display = 'block';
+        if (tabProfileLogs) {
+            tabProfileLogs.classList.add('active');
+            tabProfileLogs.style.background = '#007bff';
+            tabProfileLogs.style.color = '#fff';
+        }
+        if (sectionTitle) sectionTitle.textContent = '⏱️ 피팅 프로파일링';
+        if (logsCountLabel) logsCountLabel.textContent = '전체 프로파일링:';
+        if (searchContainerText) searchContainerText.style.display = 'none';
+        if (searchContainerDate) searchContainerDate.style.display = 'none';
+        currentSearchDate = null;
+        // 기본값은 일반 피팅
+        if (!currentProfileEndpoint) {
+            currentProfileEndpoint = '/tryon/compare';
+        }
+        loadProfileLogs(currentProfileLogsPage, currentProfileEndpoint);
+    } else if (tab === 'dress-fitting') {
+        if (dressFittingSection) dressFittingSection.style.display = 'block';
+        if (tabDressFitting) {
+            tabDressFitting.classList.add('active');
+            tabDressFitting.style.background = '#007bff';
+            tabDressFitting.style.color = '#fff';
+        }
+        if (sectionTitle) sectionTitle.textContent = '👗 드레스 피팅 로그';
+        if (logsCountLabel) logsCountLabel.textContent = '전체 피팅:';
+        if (searchContainerText) searchContainerText.style.display = 'none';
+        if (searchContainerDate) searchContainerDate.style.display = 'block';
+        // 날짜 검색 입력 필드에 현재 검색 날짜 설정
+        const dateSearchInput = document.getElementById('date-search-input');
+        const dateSearchClearButton = document.getElementById('date-search-clear-button');
+        if (dateSearchInput && currentSearchDate) {
+            dateSearchInput.value = currentSearchDate;
+        }
+        if (dateSearchClearButton) {
+            dateSearchClearButton.style.display = currentSearchDate ? 'inline-block' : 'none';
+        }
+        // 현재 뷰에 따라 데이터 로드
+        if (currentDressFittingView === 'logs') {
+            loadDressFittingLogs(currentDressFittingPage, currentSearchDate);
+        } else {
+            loadDressFittingCounts(currentDressFittingCountsPage, currentSearchDate);
+        }
+    } else if (tab === 'usage-stats') {
+        if (usageStatsSection) usageStatsSection.style.display = 'block';
+        if (tabUsageStats) {
+            tabUsageStats.classList.add('active');
+            tabUsageStats.style.background = '#007bff';
+            tabUsageStats.style.color = '#fff';
+        }
+        if (sectionTitle) sectionTitle.textContent = '📊 기능별 사용횟수';
+        if (logsCountLabel) logsCountLabel.textContent = '전체 사용횟수:';
+        if (searchContainerText) searchContainerText.style.display = 'none';
+        if (searchContainerDate) searchContainerDate.style.display = 'none';
+        // 다른 탭으로 전환 시 날짜 검색 초기화
+        currentSearchDate = null;
+        loadUsageStats();
+    }
+}
+
+// 드레스 피팅 로그 뷰 전환
+function switchDressFittingView(view) {
+    currentDressFittingView = view;
+    
+    const logsView = document.getElementById('dress-fitting-logs-view');
+    const countsView = document.getElementById('dress-fitting-counts-view');
+    const logsButton = document.getElementById('dress-fitting-view-logs');
+    const countsButton = document.getElementById('dress-fitting-view-counts');
+    
+    if (view === 'logs') {
+        if (logsView) logsView.style.display = 'block';
+        if (countsView) countsView.style.display = 'none';
+        if (logsButton) {
+            logsButton.classList.add('active');
+            logsButton.style.background = '#007bff';
+            logsButton.style.color = '#fff';
+        }
+        if (countsButton) {
+            countsButton.classList.remove('active');
+            countsButton.style.background = '#fff';
+            countsButton.style.color = '#333';
+        }
+        loadDressFittingLogs(currentDressFittingPage, currentSearchDate);
+    } else {
+        if (logsView) logsView.style.display = 'none';
+        if (countsView) countsView.style.display = 'block';
+        if (logsButton) {
+            logsButton.classList.remove('active');
+            logsButton.style.background = '#fff';
+            logsButton.style.color = '#333';
+        }
+        if (countsButton) {
+            countsButton.classList.add('active');
+            countsButton.style.background = '#007bff';
+            countsButton.style.color = '#fff';
+        }
+        loadDressFittingCounts(currentDressFittingCountsPage, currentSearchDate);
     }
 }
 
@@ -252,6 +508,64 @@ function clearSearch() {
     currentSearchModel = null;
     currentPage = 1;
     loadLogs(currentPage);
+}
+
+// 날짜 검색 처리
+function handleDateSearch() {
+    const dateSearchInput = document.getElementById('date-search-input');
+    const dateValue = dateSearchInput ? dateSearchInput.value.trim() : '';
+    const clearButton = document.getElementById('date-search-clear-button');
+
+    currentSearchDate = dateValue || null;
+    
+    // 통계 탭에 따라 해당 페이지 초기화 및 데이터 로드
+    if (currentTab === 'synthesis-stats') {
+        currentSynthesisStatsPage = 1;
+        loadDailySynthesisStats(currentSynthesisStatsPage, currentSearchDate);
+    } else if (currentTab === 'visitor-stats') {
+        currentVisitorStatsPage = 1;
+        loadDailyVisitorStats(currentVisitorStatsPage, currentSearchDate);
+    } else if (currentTab === 'dress-fitting') {
+        if (currentDressFittingView === 'logs') {
+            currentDressFittingPage = 1;
+            loadDressFittingLogs(currentDressFittingPage, currentSearchDate);
+        } else {
+            currentDressFittingCountsPage = 1;
+            loadDressFittingCounts(currentDressFittingCountsPage, currentSearchDate);
+        }
+    }
+
+    // 검색어가 있으면 초기화 버튼 표시
+    if (clearButton) {
+        clearButton.style.display = dateValue ? 'inline-block' : 'none';
+    }
+}
+
+// 날짜 검색 초기화
+function clearDateSearch() {
+    const dateSearchInput = document.getElementById('date-search-input');
+    const clearButton = document.getElementById('date-search-clear-button');
+
+    if (dateSearchInput) {
+        dateSearchInput.value = '';
+    }
+    if (clearButton) {
+        clearButton.style.display = 'none';
+    }
+
+    currentSearchDate = null;
+    
+    // 통계 탭에 따라 해당 페이지 초기화 및 데이터 로드
+    if (currentTab === 'synthesis-stats') {
+        currentSynthesisStatsPage = 1;
+        loadDailySynthesisStats(currentSynthesisStatsPage);
+    } else if (currentTab === 'visitor-stats') {
+        currentVisitorStatsPage = 1;
+        loadDailyVisitorStats(currentVisitorStatsPage);
+    } else if (currentTab === 'dress-fitting') {
+        currentDressFittingPage = 1;
+        loadDressFittingLogs(currentDressFittingPage);
+    }
 }
 
 // 로그 갯수 업데이트
@@ -515,15 +829,25 @@ document.addEventListener('keydown', (e) => {
 
 // 유틸리티 함수들
 function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString('ko-KR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    });
+    if (!dateString) return '-';
+    
+    try {
+        const date = new Date(dateString);
+        
+        // 한국시간(Asia/Seoul, UTC+9)으로 명시적으로 변환
+        return date.toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: 'Asia/Seoul'
+        });
+    } catch (e) {
+        console.error('날짜 포맷팅 오류:', e, dateString);
+        return String(dateString);
+    }
 }
 
 function formatTime(dateString) {
@@ -986,6 +1310,1362 @@ function renderReviewsPagination(total, currentPage) {
     html += createPageButton(totalPages, '마지막', currentPage === totalPages);
 
     html += `<span class="pagination-info">총 ${total}개 항목 (${currentPage}/${totalPages} 페이지)</span>`;
+
+    paginationDiv.innerHTML = html;
+}
+
+// 날짜별 합성 통계 로드
+async function loadDailySynthesisStats(page, date = null) {
+    try {
+        let url = `/api/admin/daily-synthesis-stats?page=${page}&limit=${itemsPerPage}`;
+        if (date && date.trim() !== '') {
+            url += `&date=${encodeURIComponent(date.trim())}`;
+        }
+
+        const headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
+        const response = await fetch(url, {
+            headers: headers
+        });
+
+        // 401 오류 처리
+        if (response.status === 401) {
+            window.location.href = '/';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderDailySynthesisStats(data.data);
+            renderDailySynthesisStatsPagination(data.pagination);
+            updateSynthesisStatsCount(data.pagination.total);
+            currentSynthesisStatsPage = page;
+        } else {
+            showError('날짜별 합성 통계를 불러오는 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('날짜별 합성 통계 로드 오류:', error);
+        const tbody = document.getElementById('synthesis-stats-tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="2" class="loading">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
+        }
+    }
+}
+
+// 날짜별 합성 통계 테이블 렌더링
+function renderDailySynthesisStats(stats) {
+    const tbody = document.getElementById('synthesis-stats-tbody');
+
+    if (!tbody) return;
+
+    if (stats.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" class="loading">데이터가 없습니다.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = stats.map(stat => {
+        const date = stat.date || stat.synthesis_date || '-';
+        const count = stat.count !== undefined ? stat.count : 0;
+
+        return `
+        <tr>
+            <td>${date}</td>
+            <td>${count}</td>
+        </tr>
+    `;
+    }).join('');
+}
+
+// 날짜별 합성 통계 페이지네이션 렌더링
+function renderDailySynthesisStatsPagination(pagination) {
+    const paginationDiv = document.getElementById('synthesis-stats-pagination');
+
+    if (!paginationDiv) return;
+
+    if (pagination.total_pages === 0) {
+        paginationDiv.innerHTML = '';
+        return;
+    }
+
+    const createPageButton = (pageNum, text, disabled = false, active = false) => {
+        if (disabled) {
+            return `<button disabled>${text}</button>`;
+        }
+        const activeClass = active ? ' class="active"' : '';
+        const dateParam = currentSearchDate ? `, '${currentSearchDate}'` : '';
+        return `<button onclick="loadDailySynthesisStats(${pageNum}${dateParam})"${activeClass}>${text}</button>`;
+    };
+
+    let html = createPageButton(1, '처음', pagination.page === 1);
+
+    if (pagination.page > 1) {
+        html += createPageButton(pagination.page - 1, '이전');
+    }
+
+    const startPage = Math.max(1, pagination.page - 2);
+    const endPage = Math.min(pagination.total_pages, pagination.page + 2);
+
+    if (startPage > 1) {
+        html += '<button disabled>...</button>';
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += createPageButton(i, i.toString(), false, i === pagination.page);
+    }
+
+    if (endPage < pagination.total_pages) {
+        html += '<button disabled>...</button>';
+    }
+
+    if (pagination.page < pagination.total_pages) {
+        html += createPageButton(pagination.page + 1, '다음');
+    }
+
+    html += createPageButton(pagination.total_pages, '마지막', pagination.page === pagination.total_pages);
+
+    html += `<span class="pagination-info">총 ${pagination.total}개 항목 (${pagination.page}/${pagination.total_pages} 페이지)</span>`;
+
+    paginationDiv.innerHTML = html;
+}
+
+// 날짜별 합성 통계 카운트 업데이트
+function updateSynthesisStatsCount(count) {
+    const logsCountElement = document.getElementById('logs-count');
+    if (logsCountElement) {
+        logsCountElement.textContent = count;
+    }
+}
+
+// 날짜별 조회수 통계 로드
+// 기능별 사용횟수 통계 로드
+async function loadUsageStats() {
+    try {
+        const url = `/api/admin/usage-stats`;
+
+        const headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
+        const response = await fetch(url, {
+            headers: headers
+        });
+
+        // 401 오류 처리
+        if (response.status === 401) {
+            // 인증 오류 시 조용히 로그인 페이지로 이동
+            window.location.href = '/';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderUsageStats(data.data);
+            updateUsageStatsCount(data.data.total);
+        } else {
+            showError(data.message || '사용횟수 통계를 불러오는 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('사용횟수 통계 로드 오류:', error);
+        const tbody = document.getElementById('usage-stats-tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="2" class="loading" style="color: #ef4444;">통계를 불러오는 중 오류가 발생했습니다.</td></tr>';
+        }
+    }
+}
+
+// 기능별 사용횟수 통계 갯수 업데이트
+function updateUsageStatsCount(count) {
+    const logsCountElement = document.getElementById('logs-count');
+    if (logsCountElement) {
+        logsCountElement.textContent = count;
+    }
+}
+
+// 기능별 사용횟수 통계 테이블 렌더링
+function renderUsageStats(stats) {
+    const tbody = document.getElementById('usage-stats-tbody');
+
+    if (!tbody) return;
+
+    const statsData = [
+        { name: '일반피팅', count: stats.general_fitting || 0 },
+        { name: '커스텀피팅', count: stats.custom_fitting || 0 },
+        { name: '체형분석', count: stats.body_analysis || 0 },
+        { name: '전체', count: stats.total || 0, isTotal: true }
+    ];
+
+    let html = statsData.map(stat => {
+        const rowClass = stat.isTotal ? 'style="font-weight: bold; background-color: #f0f0f0;"' : '';
+        return `
+        <tr ${rowClass}>
+            <td>${stat.name}</td>
+            <td>${stat.count.toLocaleString()}회</td>
+        </tr>
+        `;
+    }).join('');
+
+    // 카운팅 시작 날짜 정보 추가
+    if (stats.start_date) {
+        html += `
+        <tr style="font-style: italic; color: #666; font-size: 0.9em;">
+            <td colspan="2" style="text-align: center; padding-top: 15px;">
+                * ${stats.start_date} 이후부터 카운팅됩니다
+            </td>
+        </tr>
+        `;
+    }
+
+    tbody.innerHTML = html;
+}
+
+async function loadDailyVisitorStats(page, date = null) {
+    try {
+        let url = `/api/admin/daily-visitor-stats?page=${page}&limit=${itemsPerPage}`;
+        if (date && date.trim() !== '') {
+            url += `&date=${encodeURIComponent(date.trim())}`;
+        }
+
+        const headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
+        const response = await fetch(url, {
+            headers: headers
+        });
+
+        // 401 오류 처리
+        if (response.status === 401) {
+            window.location.href = '/';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderDailyVisitorStats(data.data);
+            renderDailyVisitorStatsPagination(data.pagination);
+            updateVisitorStatsCount(data.pagination.total);
+            currentVisitorStatsPage = page;
+        } else {
+            showError('날짜별 조회수 통계를 불러오는 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('날짜별 조회수 통계 로드 오류:', error);
+        const tbody = document.getElementById('visitor-stats-tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="2" class="loading">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
+        }
+    }
+}
+
+// 날짜별 조회수 통계 테이블 렌더링
+function renderDailyVisitorStats(stats) {
+    const tbody = document.getElementById('visitor-stats-tbody');
+
+    if (!tbody) return;
+
+    if (stats.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" class="loading">데이터가 없습니다.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = stats.map(stat => {
+        const date = stat.date || stat.visit_date || '-';
+        const count = stat.count !== undefined ? stat.count : 0;
+
+        return `
+        <tr>
+            <td>${date}</td>
+            <td>${count}</td>
+        </tr>
+    `;
+    }).join('');
+}
+
+// 날짜별 조회수 통계 페이지네이션 렌더링
+function renderDailyVisitorStatsPagination(pagination) {
+    const paginationDiv = document.getElementById('visitor-stats-pagination');
+
+    if (!paginationDiv) return;
+
+    if (pagination.total_pages === 0) {
+        paginationDiv.innerHTML = '';
+        return;
+    }
+
+    const createPageButton = (pageNum, text, disabled = false, active = false) => {
+        if (disabled) {
+            return `<button disabled>${text}</button>`;
+        }
+        const activeClass = active ? ' class="active"' : '';
+        const dateParam = currentSearchDate ? `, '${currentSearchDate}'` : '';
+        return `<button onclick="loadDailyVisitorStats(${pageNum}${dateParam})"${activeClass}>${text}</button>`;
+    };
+
+    let html = createPageButton(1, '처음', pagination.page === 1);
+
+    if (pagination.page > 1) {
+        html += createPageButton(pagination.page - 1, '이전');
+    }
+
+    const startPage = Math.max(1, pagination.page - 2);
+    const endPage = Math.min(pagination.total_pages, pagination.page + 2);
+
+    if (startPage > 1) {
+        html += '<button disabled>...</button>';
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += createPageButton(i, i.toString(), false, i === pagination.page);
+    }
+
+    if (endPage < pagination.total_pages) {
+        html += '<button disabled>...</button>';
+    }
+
+    if (pagination.page < pagination.total_pages) {
+        html += createPageButton(pagination.page + 1, '다음');
+    }
+
+    html += createPageButton(pagination.total_pages, '마지막', pagination.page === pagination.total_pages);
+
+    html += `<span class="pagination-info">총 ${pagination.total}개 항목 (${pagination.page}/${pagination.total_pages} 페이지)</span>`;
+
+    paginationDiv.innerHTML = html;
+}
+
+// 날짜별 조회수 통계 카운트 업데이트
+function updateVisitorStatsCount(count) {
+    const logsCountElement = document.getElementById('logs-count');
+    if (logsCountElement) {
+        logsCountElement.textContent = count;
+    }
+}
+
+// 커스텀 피팅 로그 목록 로드
+async function loadCustomFittingLogs(page) {
+    try {
+        const url = `/api/admin/custom-fitting-logs?page=${page}&limit=${itemsPerPage}`;
+
+        const headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
+        const response = await fetch(url, {
+            headers: headers
+        });
+
+        // 401 오류 처리
+        if (response.status === 401) {
+            window.location.href = '/';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderCustomFittingLogs(data.data);
+            renderCustomFittingPagination(data.pagination);
+            updateCustomFittingCount(data.pagination.total);
+            currentCustomFittingPage = page;
+        } else {
+            showError(data.message || '커스텀 피팅 로그를 불러오는 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('커스텀 피팅 로그 로드 오류:', error);
+        const tbody = document.getElementById('custom-fitting-logs-tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="4" class="loading" style="color: #ef4444;">로그를 불러오는 중 오류가 발생했습니다.</td></tr>';
+        }
+    }
+}
+
+// 커스텀 피팅 로그 테이블 렌더링
+function renderCustomFittingLogs(logs) {
+    const tbody = document.getElementById('custom-fitting-logs-tbody');
+
+    if (!tbody) return;
+
+    if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="loading">로그가 없습니다.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = logs.map(log => {
+        const id = log.id !== undefined ? log.id : '-';
+        
+        // 생성일시 포맷팅 (한국시간으로 변환)
+        const createdAt = log.created_at ? formatDateTime(log.created_at) : '-';
+        
+        const runTime = log.run_time !== undefined && log.run_time !== null
+            ? (typeof log.run_time === 'number' ? log.run_time.toFixed(2) + '초' : log.run_time)
+            : '-';
+        const dressUrl = log.dress_url || '';
+
+        // 의상 이미지 표시 (있으면 이미지, 없으면 메시지)
+        // 클릭 시 모달 팝업으로 표시
+        const dressImageHtml = dressUrl
+            ? `<img src="/api/admin/s3-image-proxy?url=${encodeURIComponent(dressUrl)}" alt="의상 이미지" style="max-width: 100px; max-height: 100px; cursor: pointer;" onclick="showDressImageModal('${escapeHtml(dressUrl)}')" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display: none; color: #999;">이미지 없음</span>`
+            : '<span style="color: #999;">-</span>';
+
+        return `
+        <tr>
+            <td>${id}</td>
+            <td>${createdAt}</td>
+            <td>${runTime}</td>
+            <td>${dressImageHtml}</td>
+        </tr>
+    `;
+    }).join('');
+}
+
+// 커스텀 피팅 로그 페이지네이션 렌더링
+function renderCustomFittingPagination(pagination) {
+    const paginationDiv = document.getElementById('custom-fitting-pagination');
+
+    if (!paginationDiv) return;
+
+    if (pagination.total_pages === 0) {
+        paginationDiv.innerHTML = '';
+        return;
+    }
+
+    const createPageButton = (pageNum, text, disabled = false, active = false) => {
+        if (disabled) {
+            return `<button disabled>${text}</button>`;
+        }
+        const activeClass = active ? ' class="active"' : '';
+        return `<button onclick="loadCustomFittingLogs(${pageNum})"${activeClass}>${text}</button>`;
+    };
+
+    let html = createPageButton(1, '처음', pagination.page === 1);
+
+    if (pagination.page > 1) {
+        html += createPageButton(pagination.page - 1, '이전');
+    }
+
+    const startPage = Math.max(1, pagination.page - 2);
+    const endPage = Math.min(pagination.total_pages, pagination.page + 2);
+
+    if (startPage > 1) {
+        html += '<button disabled>...</button>';
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += createPageButton(i, i.toString(), false, i === pagination.page);
+    }
+
+    if (endPage < pagination.total_pages) {
+        html += '<button disabled>...</button>';
+    }
+
+    if (pagination.page < pagination.total_pages) {
+        html += createPageButton(pagination.page + 1, '다음');
+    }
+
+    html += createPageButton(pagination.total_pages, '마지막', pagination.page === pagination.total_pages);
+
+    html += `<span class="pagination-info">총 ${pagination.total}개 항목 (${pagination.page}/${pagination.total_pages} 페이지)</span>`;
+
+    paginationDiv.innerHTML = html;
+}
+
+// 커스텀 피팅 로그 카운트 업데이트
+function updateCustomFittingCount(count) {
+    const logsCountElement = document.getElementById('logs-count');
+    if (logsCountElement) {
+        logsCountElement.textContent = count;
+    }
+}
+
+// 의상 이미지 모달 표시
+function showDressImageModal(dressUrl) {
+    const modalBody = document.getElementById('modal-body');
+    if (!modalBody) return;
+
+    const dressImageHtml = dressUrl ? `
+        <div class="detail-item" style="grid-column: 1 / -1;">
+            <div class="detail-label">의상 이미지</div>
+            <div class="image-preview-single">
+                <img 
+                    id="dress-image" 
+                    src="/api/admin/s3-image-proxy?url=${encodeURIComponent(dressUrl)}" 
+                    alt="의상 이미지" 
+                    loading="lazy"
+                    onload="handleImageLoad(this);"
+                    onerror="handleImageError(this, '${escapeHtml(dressUrl)}');"
+                    style="opacity: 0; transition: opacity 0.3s; max-width: 100%;"
+                >
+                <div id="image-loading" style="text-align: center; padding: 20px; color: #666;">
+                    ⏳ 이미지를 불러오는 중...
+                </div>
+                <div id="image-error" style="display: none; text-align: center; padding: 20px; color: #ef4444;">
+                    ❌ 이미지를 불러올 수 없습니다
+                    <br><small style="color: #999; word-break: break-all;">${escapeHtml(dressUrl)}</small>
+                </div>
+            </div>
+        </div>
+    ` : `
+        <div class="detail-item">
+            <div class="detail-label">의상 이미지</div>
+            <div class="detail-value" style="color: #ef4444; text-align: center; padding: 20px;">
+                ❌ 의상 이미지가 없습니다
+            </div>
+        </div>
+    `;
+
+    modalBody.innerHTML = `
+        <div class="detail-grid">
+            ${dressImageHtml}
+        </div>
+    `;
+
+    // 이미지 로드 상태 확인
+    if (dressUrl) {
+        setTimeout(() => {
+            const img = document.getElementById('dress-image');
+            const loading = document.getElementById('image-loading');
+
+            if (img) {
+                // 이미지가 이미 로드되어 있으면 loading 숨기기
+                if (img.complete && img.naturalHeight !== 0) {
+                    if (loading) loading.style.display = 'none';
+                    img.style.opacity = '1';
+                } else {
+                    // 이미지 로딩 중 표시
+                    if (loading) loading.style.display = 'block';
+                }
+            }
+        }, 100);
+    }
+
+    // 모달 제목 변경
+    const modalTitle = document.querySelector('#detail-modal .modal-header h3');
+    if (modalTitle) {
+        modalTitle.textContent = '👔 의상 이미지';
+    }
+
+    openModal();
+}
+
+// 프로파일링 로그 로드
+async function loadProfileLogs(page = 1, endpoint = null) {
+    try {
+        currentProfileLogsPage = page;
+        currentProfileEndpoint = endpoint || '/tryon/compare';
+        
+        // 테이블 헤더 업데이트
+        updateProfileLogsTableHeader(currentProfileEndpoint);
+        
+        const headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
+        let url = `/api/admin/tryon-profile-logs?page=${page}&limit=${itemsPerPage}`;
+        if (currentProfileEndpoint) {
+            url += `&endpoint=${encodeURIComponent(currentProfileEndpoint)}`;
+        }
+        
+        const response = await fetch(url, {
+            headers: headers
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            renderProfileLogs(data.data);
+            renderProfileLogsPagination(data.pagination);
+            updateLogsCount(data.pagination.total);
+        } else {
+            const tbody = document.getElementById('profile-logs-tbody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="10" class="loading">${data.message || '로그를 불러오는 중 오류가 발생했습니다.'}</td></tr>`;
+            }
+        }
+    } catch (error) {
+        console.error('프로파일링 로그 로드 오류:', error);
+        const tbody = document.getElementById('profile-logs-tbody');
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="10" class="loading">로그를 불러오는 중 오류가 발생했습니다.</td></tr>`;
+        }
+    }
+}
+
+// 프로파일링 로그 테이블 헤더 업데이트
+function updateProfileLogsTableHeader(endpoint) {
+    const thead = document.getElementById('profile-logs-thead');
+    if (!thead) return;
+    
+    // 새로운 컬럼 구조: ID, 카테고리, 생성일시, 인물사진 업로드&예외처리, 드레스 드롭, 리사이징, Gemini 호출, 드레스 업로드 & 예외처리, 누끼 처리, 상세보기
+    thead.innerHTML = `
+        <tr>
+            <th>ID</th>
+            <th>카테고리</th>
+            <th>생성일시</th>
+            <th>인물사진 업로드&예외처리</th>
+            <th>드레스 드롭</th>
+            <th>리사이징</th>
+            <th>Gemini 호출</th>
+            <th>드레스 업로드 & 예외처리</th>
+            <th>누끼 처리</th>
+            <th>상세보기</th>
+        </tr>
+    `;
+}
+
+// 프로파일링 로그에서 duration_ms 데이터 수집 및 요약 계산 (더 이상 사용하지 않음 - 주석 처리)
+/*
+function calculateProfileSummary(log, endpoint) {
+    const frontProfile = log.front_profile || {};
+    const serverTotalMs = log.server_total_ms;
+    
+    // 모든 duration_ms 데이터 수집
+    const durations = [];
+    
+    // 백엔드 프로파일링 데이터 (리사이징)
+    if (log.resize_ms !== null && log.resize_ms !== undefined && typeof log.resize_ms === 'number' && log.resize_ms > 0) {
+        durations.push({
+            name: '리사이징',
+            value: log.resize_ms
+        });
+    }
+    
+    // 프론트엔드 프로파일링 데이터
+    const frontProfileKeys = [
+        'bg_select_ms', 'person_upload_ms', 'person_validate_ms', 
+        'dress_upload_ms', 'dress_validate_ms', 'dress_cutout_ms',
+        'dress_drop_ms', 'compose_click_to_response_ms', 'result_image_load_ms'
+    ];
+    
+    frontProfileKeys.forEach(key => {
+        const value = frontProfile[key];
+        if (value !== null && value !== undefined && typeof value === 'number' && value > 0) {
+            durations.push({
+                name: getDurationName(key),
+                value: value
+            });
+        }
+    });
+    
+    // 백엔드 프로파일링 데이터
+    if (log.gemini_call_ms !== null && log.gemini_call_ms !== undefined && typeof log.gemini_call_ms === 'number' && log.gemini_call_ms > 0) {
+        durations.push({
+            name: 'Gemini 호출',
+            value: log.gemini_call_ms
+        });
+    }
+    
+    if (log.cutout_ms !== null && log.cutout_ms !== undefined && typeof log.cutout_ms === 'number' && log.cutout_ms > 0) {
+        durations.push({
+            name: '누끼 처리',
+            value: log.cutout_ms
+        });
+    }
+    
+    // 서버 총 시간이 없으면 요약 계산 불가
+    if (!serverTotalMs || typeof serverTotalMs !== 'number' || serverTotalMs <= 0) {
+        return '데이터 없음';
+    }
+    
+    // 값이 없으면 요약 없음
+    if (durations.length === 0) {
+        return '데이터 없음';
+    }
+    
+    // 내림차순 정렬
+    durations.sort((a, b) => b.value - a.value);
+    
+    // 상위 3개 항목 선택
+    const topN = 3;
+    const topItems = durations.slice(0, topN);
+    const otherItems = durations.slice(topN);
+    
+    // 기타 항목 합계 계산
+    const otherTotal = otherItems.reduce((sum, item) => sum + item.value, 0);
+    const otherPercent = otherTotal > 0 ? ((otherTotal / serverTotalMs) * 100).toFixed(1) : 0;
+    
+    // 일반 피팅일 때는 퍼센트만 표시, 커스텀 피팅일 때는 초 단위와 퍼센트 모두 표시
+    const isGeneralFitting = endpoint === '/tryon/compare';
+    
+    // 요약 문자열 생성
+    const summaryParts = topItems.map(item => {
+        const percent = ((item.value / serverTotalMs) * 100).toFixed(1);
+        if (isGeneralFitting) {
+            // 일반 피팅: 퍼센트만
+            return `${item.name} ${percent}%`;
+        } else {
+            // 커스텀 피팅: 초 단위와 퍼센트
+            const valueInSeconds = (item.value / 1000).toFixed(2);
+            return `${item.name} ${valueInSeconds}s (${percent}%)`;
+        }
+    });
+    
+    if (otherTotal > 0) {
+        if (isGeneralFitting) {
+            summaryParts.push(`기타 ${otherPercent}%`);
+        } else {
+            const otherTotalSeconds = (otherTotal / 1000).toFixed(2);
+            summaryParts.push(`기타 ${otherTotalSeconds}s (${otherPercent}%)`);
+        }
+    }
+    
+    return summaryParts.join(', ');
+}
+*/
+
+// duration_ms 키를 한글 이름으로 변환
+function getDurationName(key) {
+    const nameMap = {
+        'bg_select_ms': '배경 선택',
+        'person_upload_ms': '인물 업로드',
+        'person_validate_ms': '인물 예외처리',
+        'dress_upload_ms': '드레스 업로드',
+        'dress_validate_ms': '드레스 예외처리',
+        'dress_cutout_ms': '드레스 누끼',
+        'dress_drop_ms': '드레스 드롭',
+        'compose_click_to_response_ms': '합성 처리',
+        'result_image_load_ms': '결과 이미지 로드',
+        'gemini_call_ms': 'Gemini 호출',
+        'cutout_ms': '누끼 처리',
+        'resize_ms': '리사이징'
+    };
+    return nameMap[key] || key;
+}
+
+// ms를 초 단위로 포맷팅하는 헬퍼 함수
+function formatMsToSeconds(ms) {
+    if (ms === null || ms === undefined || typeof ms !== 'number' || ms <= 0) {
+        return '-';
+    }
+    return (ms / 1000).toFixed(2) + 's';
+}
+
+// 프로파일링 로그 렌더링
+function renderProfileLogs(logs) {
+    const tbody = document.getElementById('profile-logs-tbody');
+    if (!tbody) return;
+    
+    if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="loading">로그가 없습니다.</td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = logs.map(log => {
+        const id = log.id !== undefined ? log.id : '-';
+        const endpoint = log.endpoint || '-';
+        const category = endpoint === '/tryon/compare' ? '일반 피팅' : endpoint === '/tryon/compare/custom' ? '커스텀 피팅' : endpoint;
+        // 한국시간으로 변환
+        const createdAt = log.created_at ? formatDateTime(log.created_at) : '-';
+        
+        // front_profile 데이터 추출
+        const frontProfile = log.front_profile || {};
+        
+        // 인물사진 업로드&예외처리 (person_upload_ms + person_validate_ms)
+        const personUploadMs = frontProfile.person_upload_ms || 0;
+        const personValidateMs = frontProfile.person_validate_ms || 0;
+        const personTotalMs = personUploadMs + personValidateMs;
+        const personTotal = formatMsToSeconds(personTotalMs);
+        
+        // 드레스 드롭
+        const dressDropMs = frontProfile.dress_drop_ms;
+        const dressDrop = formatMsToSeconds(dressDropMs);
+        
+        // 리사이징
+        const resizeMs = log.resize_ms;
+        const resize = formatMsToSeconds(resizeMs);
+        
+        // Gemini 호출
+        const geminiCallMs = log.gemini_call_ms;
+        const geminiCall = formatMsToSeconds(geminiCallMs);
+        
+        // 드레스 업로드 & 예외처리 (dress_upload_ms + dress_validate_ms)
+        const dressUploadMs = frontProfile.dress_upload_ms || 0;
+        const dressValidateMs = frontProfile.dress_validate_ms || 0;
+        const dressTotalMs = dressUploadMs + dressValidateMs;
+        const dressTotal = formatMsToSeconds(dressTotalMs);
+        
+        // 누끼 처리
+        const cutoutMs = log.cutout_ms;
+        const cutout = formatMsToSeconds(cutoutMs);
+        
+        return `
+            <tr>
+                <td>${id}</td>
+                <td>${category}</td>
+                <td>${createdAt}</td>
+                <td>${personTotal}</td>
+                <td>${dressDrop}</td>
+                <td>${resize}</td>
+                <td>${geminiCall}</td>
+                <td>${dressTotal}</td>
+                <td>${cutout}</td>
+                <td>
+                    <button class="btn-detail-emoji" onclick="showProfileDetail(${id})" title="상세보기">
+                        📋
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 프로파일링 로그 페이지네이션 렌더링
+function renderProfileLogsPagination(pagination) {
+    const paginationDiv = document.getElementById('profile-logs-pagination');
+    if (!paginationDiv) return;
+    
+    if (pagination.total_pages === 0) {
+        paginationDiv.innerHTML = '';
+        return;
+    }
+    
+    const createPageButton = (pageNum, text, disabled = false, active = false) => {
+        if (disabled) {
+            return `<button disabled>${text}</button>`;
+        }
+        const activeClass = active ? ' class="active"' : '';
+        return `<button onclick="loadProfileLogsWithFilter(${pageNum})"${activeClass}>${text}</button>`;
+    };
+    
+    let html = createPageButton(1, '처음', pagination.page === 1);
+    
+    if (pagination.page > 1) {
+        html += createPageButton(pagination.page - 1, '이전');
+    }
+    
+    const startPage = Math.max(1, pagination.page - 2);
+    const endPage = Math.min(pagination.total_pages, pagination.page + 2);
+    
+    if (startPage > 1) {
+        html += '<button disabled>...</button>';
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        html += createPageButton(i, i.toString(), false, i === pagination.page);
+    }
+    
+    if (endPage < pagination.total_pages) {
+        html += '<button disabled>...</button>';
+    }
+    
+    if (pagination.page < pagination.total_pages) {
+        html += createPageButton(pagination.page + 1, '다음');
+    }
+    
+    html += createPageButton(pagination.total_pages, '마지막', pagination.page === pagination.total_pages);
+    html += `<span class="pagination-info">총 ${pagination.total}개 항목 (${pagination.page}/${pagination.total_pages} 페이지)</span>`;
+    
+    paginationDiv.innerHTML = html;
+}
+
+// 프로파일링 로그 필터링
+function filterProfileLogs(endpoint) {
+    currentProfileEndpoint = endpoint;
+    currentProfileLogsPage = 1;
+    
+    // 필터 버튼 활성화 상태 업데이트
+    const generalBtn = document.getElementById('profile-filter-general');
+    const customBtn = document.getElementById('profile-filter-custom');
+    
+    if (generalBtn) {
+        generalBtn.classList.remove('active');
+        generalBtn.style.background = '#fff';
+        generalBtn.style.color = '#333';
+    }
+    if (customBtn) {
+        customBtn.classList.remove('active');
+        customBtn.style.background = '#fff';
+        customBtn.style.color = '#333';
+    }
+    
+    if (endpoint === '/tryon/compare' && generalBtn) {
+        generalBtn.classList.add('active');
+        generalBtn.style.background = '#007bff';
+        generalBtn.style.color = '#fff';
+    } else if (endpoint === '/tryon/compare/custom' && customBtn) {
+        customBtn.classList.add('active');
+        customBtn.style.background = '#007bff';
+        customBtn.style.color = '#fff';
+    }
+    
+    loadProfileLogs(1, endpoint);
+}
+
+// 프로파일링 로그 필터링 포함 로드
+function loadProfileLogsWithFilter(page) {
+    loadProfileLogs(page, currentProfileEndpoint);
+}
+
+
+// 프로파일링 로그 상세보기
+async function showProfileDetail(logId) {
+    try {
+        const headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
+        const response = await fetch(`/api/admin/tryon-profile-logs/${logId}`, {
+            headers: headers
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            renderProfileDetailModal(data.data);
+            openModal();
+        } else {
+            alert(data.message || '로그를 불러오는 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('프로파일링 로그 상세 로드 오류:', error);
+        alert('로그를 불러오는 중 오류가 발생했습니다.');
+    }
+}
+
+// 프로파일링 로그 상세 모달 렌더링
+function renderProfileDetailModal(log) {
+    const modalBody = document.getElementById('modal-body');
+    if (!modalBody) return;
+    
+    const frontProfile = log.front_profile || {};
+    const category = log.endpoint === '/tryon/compare' ? '일반 피팅' : log.endpoint === '/tryon/compare/custom' ? '커스텀 피팅' : log.endpoint;
+    const serverTotalMs = log.server_total_ms;
+    const isCustomFitting = category === '커스텀 피팅';
+    
+    // 서버 시간 수집 (서버에서 측정된 시간만)
+    const serverDurations = [];
+    
+    // 리사이징
+    const resizeMs = log.resize_ms || 0;
+    if (resizeMs > 0) {
+        serverDurations.push({
+            name: '리사이징',
+            value: resizeMs
+        });
+    }
+    
+    // Gemini 호출
+    const geminiCallMs = log.gemini_call_ms || 0;
+    if (geminiCallMs > 0) {
+        serverDurations.push({
+            name: 'Gemini 호출',
+            value: geminiCallMs
+        });
+    }
+    
+    // 커스텀 피팅만: 누끼 처리
+    if (isCustomFitting) {
+        const cutoutMs = log.cutout_ms || 0;
+        if (cutoutMs > 0) {
+            serverDurations.push({
+                name: '누끼 처리',
+                value: cutoutMs
+            });
+        }
+    }
+    
+    // 프론트엔드 시간 수집 (프론트엔드에서 측정된 시간만)
+    const frontendDurations = [];
+    
+    // 인물 업로드 & 예외처리
+    const personUploadMs = frontProfile.person_upload_ms || 0;
+    const personValidateMs = frontProfile.person_validate_ms || 0;
+    const personTotalMs = personUploadMs + personValidateMs;
+    if (personTotalMs > 0) {
+        frontendDurations.push({
+            name: '인물 업로드 & 예외처리',
+            value: personTotalMs
+        });
+    }
+    
+    if (isCustomFitting) {
+        // 커스텀 피팅: 드레스 업로드 & 예외처리
+        const dressUploadMs = frontProfile.dress_upload_ms || 0;
+        const dressValidateMs = frontProfile.dress_validate_ms || 0;
+        const dressTotalMs = dressUploadMs + dressValidateMs;
+        if (dressTotalMs > 0) {
+            frontendDurations.push({
+                name: '드레스 업로드 & 예외처리',
+                value: dressTotalMs
+            });
+        }
+    } else {
+        // 일반 피팅: 드레스 드롭
+        const dressDropMs = frontProfile.dress_drop_ms || 0;
+        if (dressDropMs > 0) {
+            frontendDurations.push({
+                name: '드레스 드롭',
+                value: dressDropMs
+            });
+        }
+    }
+    
+    // 기본 정보
+    let detailItems = `
+        <div class="detail-item">
+            <div class="detail-label">카테고리</div>
+            <div class="detail-value">${category}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">생성일시</div>
+            <div class="detail-value">${log.created_at ? formatDateTime(log.created_at) : '-'}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">서버 총 시간</div>
+            <div class="detail-value">${serverTotalMs !== null && serverTotalMs !== undefined ? (serverTotalMs / 1000).toFixed(2) + ' s' : '-'}</div>
+        </div>
+    `;
+    
+    // 서버 시간 분포 상세 표시 (서버 총 시간 기준 퍼센트)
+    if (serverTotalMs && typeof serverTotalMs === 'number' && serverTotalMs > 0 && serverDurations.length > 0) {
+        // 퍼센트 계산 및 정렬 (서버 총 시간 기준)
+        const serverDurationsWithPercent = serverDurations.map(item => {
+            const percent = (item.value / serverTotalMs) * 100;
+            return {
+                ...item,
+                percent: percent
+            };
+        });
+        
+        // 퍼센트 내림차순 정렬
+        serverDurationsWithPercent.sort((a, b) => b.percent - a.percent);
+        
+        // 서버 시간 분포 상세 HTML 생성
+        let serverTimeDetailHtml = '<div style="margin-top: 10px;">';
+        
+        serverDurationsWithPercent.forEach(item => {
+            const percent = item.percent.toFixed(2);
+            const displayValue = (item.value / 1000).toFixed(2);
+            serverTimeDetailHtml += `
+                <div style="margin-bottom: 8px;">
+                    <strong>${item.name}:</strong> ${percent}% (${displayValue} s)
+                </div>
+            `;
+        });
+        
+        serverTimeDetailHtml += '</div>';
+        
+        detailItems += `
+        <div class="detail-item" style="grid-column: 1 / -1;">
+            <div class="detail-label">서버 시간 분포 상세</div>
+            <div class="detail-value">${serverTimeDetailHtml}</div>
+        </div>
+        `;
+    } else {
+        detailItems += `
+        <div class="detail-item">
+            <div class="detail-label">서버 시간 분포 상세</div>
+            <div class="detail-value">데이터 없음</div>
+        </div>
+        `;
+    }
+    
+    // 프론트엔드 시간 분포 표시 (퍼센트 없이 시간만)
+    if (frontendDurations.length > 0) {
+        // 프론트엔드 시간 분포 HTML 생성
+        let frontendTimeDetailHtml = '<div style="margin-top: 10px;">';
+        
+        frontendDurations.forEach(item => {
+            const displayValue = (item.value / 1000).toFixed(2);
+            frontendTimeDetailHtml += `
+                <div style="margin-bottom: 8px;">
+                    <strong>${item.name}:</strong> ${displayValue} s
+                </div>
+            `;
+        });
+        
+        frontendTimeDetailHtml += '</div>';
+        
+        detailItems += `
+        <div class="detail-item" style="grid-column: 1 / -1;">
+            <div class="detail-label">프론트엔드 시간 분포</div>
+            <div class="detail-value">${frontendTimeDetailHtml}</div>
+        </div>
+        `;
+    } else {
+        detailItems += `
+        <div class="detail-item">
+            <div class="detail-label">프론트엔드 시간 분포</div>
+            <div class="detail-value">데이터 없음</div>
+        </div>
+        `;
+    }
+    
+    // 에러 단계가 있으면 추가
+    if (log.error_stage) {
+        detailItems += `
+        <div class="detail-item">
+            <div class="detail-label">에러 단계</div>
+            <div class="detail-value" style="color: #ef4444;">${log.error_stage}</div>
+        </div>
+        `;
+    }
+    
+    modalBody.innerHTML = `
+        <div class="detail-grid">
+            ${detailItems}
+        </div>
+    `;
+    
+    // 모달 제목 변경
+    const modalTitle = document.querySelector('#detail-modal .modal-header h3');
+    if (modalTitle) {
+        modalTitle.textContent = '⏱️ 프로파일링 로그 상세';
+    }
+}
+
+// 드레스 피팅 로그 로드
+async function loadDressFittingLogs(page, date = null) {
+    try {
+        let url = `/api/admin/dress-fitting-logs?page=${page}&limit=${itemsPerPage}`;
+        if (date && date.trim() !== '') {
+            url += `&date=${encodeURIComponent(date.trim())}`;
+        }
+
+        const headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
+        const response = await fetch(url, {
+            headers: headers
+        });
+
+        // 401 오류 처리
+        if (response.status === 401) {
+            window.location.href = '/';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderDressFittingLogs(data.data);
+            renderDressFittingPagination(data.pagination);
+            updateDressFittingCount(data.pagination.total);
+            currentDressFittingPage = page;
+        } else {
+            showError('드레스 피팅 로그를 불러오는 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('드레스 피팅 로그 로드 오류:', error);
+        const tbody = document.getElementById('dress-fitting-logs-tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="5" class="loading">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
+        }
+    }
+}
+
+// 드레스 피팅 로그 테이블 렌더링
+function renderDressFittingLogs(logs) {
+    const tbody = document.getElementById('dress-fitting-logs-tbody');
+
+    if (!tbody) return;
+
+    if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading">데이터가 없습니다.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = logs.map(log => {
+        const id = log.id || '-';
+        const dressId = log.dress_id || '-';
+        const style = escapeHtml(log.style || '-');
+        const createdAt = log.created_at ? formatDateTime(log.created_at) : '-';
+        const dressUrl = log.url || '';
+        
+        // 드레스 이미지 표시 (있으면 이미지, 없으면 메시지)
+        const dressImageHtml = dressUrl
+            ? `<img src="/api/admin/s3-image-proxy?url=${encodeURIComponent(dressUrl)}" alt="드레스 이미지" style="max-width: 100px; max-height: 100px; cursor: pointer; object-fit: cover; border-radius: 4px;" onclick="showDressImageModal('${escapeHtml(dressUrl)}')" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display: none; color: #999;">이미지 없음</span>`
+            : '<span style="color: #999;">-</span>';
+
+        return `
+        <tr>
+            <td>${id}</td>
+            <td>${dressId}</td>
+            <td>${dressImageHtml}</td>
+            <td>${style}</td>
+            <td>${createdAt}</td>
+        </tr>
+    `;
+    }).join('');
+}
+
+// 드레스 피팅 로그 페이지네이션 렌더링
+function renderDressFittingPagination(pagination) {
+    const paginationDiv = document.getElementById('dress-fitting-pagination');
+
+    if (!paginationDiv) return;
+
+    if (pagination.total_pages === 0) {
+        paginationDiv.innerHTML = '';
+        return;
+    }
+
+    const createPageButton = (pageNum, text, disabled = false, active = false) => {
+        if (disabled) {
+            return `<button disabled>${text}</button>`;
+        }
+        const activeClass = active ? ' class="active"' : '';
+        const dateParam = currentSearchDate ? `, '${currentSearchDate}'` : '';
+        return `<button onclick="loadDressFittingLogs(${pageNum}${dateParam})"${activeClass}>${text}</button>`;
+    };
+
+    let html = createPageButton(1, '처음', pagination.page === 1);
+
+    if (pagination.page > 1) {
+        html += createPageButton(pagination.page - 1, '이전');
+    }
+
+    const startPage = Math.max(1, pagination.page - 2);
+    const endPage = Math.min(pagination.total_pages, pagination.page + 2);
+
+    if (startPage > 1) {
+        html += '<button disabled>...</button>';
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += createPageButton(i, i.toString(), false, i === pagination.page);
+    }
+
+    if (endPage < pagination.total_pages) {
+        html += '<button disabled>...</button>';
+    }
+
+    if (pagination.page < pagination.total_pages) {
+        html += createPageButton(pagination.page + 1, '다음');
+    }
+
+    html += createPageButton(pagination.total_pages, '마지막', pagination.page === pagination.total_pages);
+
+    html += `<span class="pagination-info">총 ${pagination.total}개 항목 (${pagination.page}/${pagination.total_pages} 페이지)</span>`;
+
+    paginationDiv.innerHTML = html;
+}
+
+// 드레스 피팅 로그 카운트 업데이트
+function updateDressFittingCount(count) {
+    const logsCountElement = document.getElementById('logs-count');
+    if (logsCountElement) {
+        logsCountElement.textContent = count;
+    }
+}
+
+// 드레스별 카운트 로드
+async function loadDressFittingCounts(page, date = null) {
+    try {
+        let url = `/api/admin/dress-fitting-counts?page=${page}&limit=${itemsPerPage}`;
+        if (date && date.trim() !== '') {
+            url += `&date=${encodeURIComponent(date.trim())}`;
+        }
+
+        const headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
+        const response = await fetch(url, {
+            headers: headers
+        });
+
+        // 401 오류 처리
+        if (response.status === 401) {
+            window.location.href = '/';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderDressFittingCounts(data.data);
+            renderDressFittingCountsPagination(data.pagination);
+            updateDressFittingCount(data.pagination.total);
+            currentDressFittingCountsPage = page;
+        } else {
+            showError('드레스별 카운트를 불러오는 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('드레스별 카운트 로드 오류:', error);
+        const tbody = document.getElementById('dress-fitting-counts-tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
+        }
+    }
+}
+
+// 드레스별 카운트 테이블 렌더링
+function renderDressFittingCounts(counts) {
+    const tbody = document.getElementById('dress-fitting-counts-tbody');
+
+    if (!tbody) return;
+
+    if (counts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="loading">데이터가 없습니다.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = counts.map(count => {
+        const dressId = count.dress_id || '-';
+        const dressName = escapeHtml(count.dress_name || '-');
+        const style = escapeHtml(count.style || '-');
+        const fittingCount = count.fitting_count || 0;
+        const lastFittingAt = count.last_fitting_at ? formatDateTime(count.last_fitting_at) : '-';
+        const dressUrl = count.url || '';
+        
+        // 드레스 이미지 표시
+        const dressImageHtml = dressUrl
+            ? `<img src="/api/admin/s3-image-proxy?url=${encodeURIComponent(dressUrl)}" alt="드레스 이미지" style="max-width: 100px; max-height: 100px; cursor: pointer; object-fit: cover; border-radius: 4px;" onclick="showDressImageModal('${escapeHtml(dressUrl)}')" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display: none; color: #999;">이미지 없음</span>`
+            : '<span style="color: #999;">-</span>';
+
+        return `
+        <tr>
+            <td>${dressId}</td>
+            <td>${dressImageHtml}</td>
+            <td>${dressName}</td>
+            <td>${style}</td>
+            <td><strong style="color: #007bff;">${fittingCount}</strong></td>
+            <td>${lastFittingAt}</td>
+        </tr>
+    `;
+    }).join('');
+}
+
+// 드레스별 카운트 페이지네이션 렌더링
+function renderDressFittingCountsPagination(pagination) {
+    const paginationDiv = document.getElementById('dress-fitting-counts-pagination');
+
+    if (!paginationDiv) return;
+
+    if (pagination.total_pages === 0) {
+        paginationDiv.innerHTML = '';
+        return;
+    }
+
+    const createPageButton = (pageNum, text, disabled = false, active = false) => {
+        if (disabled) {
+            return `<button disabled>${text}</button>`;
+        }
+        const activeClass = active ? ' class="active"' : '';
+        const dateParam = currentSearchDate ? `, '${currentSearchDate}'` : '';
+        return `<button onclick="loadDressFittingCounts(${pageNum}${dateParam})"${activeClass}>${text}</button>`;
+    };
+
+    let html = createPageButton(1, '처음', pagination.page === 1);
+
+    if (pagination.page > 1) {
+        html += createPageButton(pagination.page - 1, '이전');
+    }
+
+    const startPage = Math.max(1, pagination.page - 2);
+    const endPage = Math.min(pagination.total_pages, pagination.page + 2);
+
+    if (startPage > 1) {
+        html += '<button disabled>...</button>';
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += createPageButton(i, i.toString(), false, i === pagination.page);
+    }
+
+    if (endPage < pagination.total_pages) {
+        html += '<button disabled>...</button>';
+    }
+
+    if (pagination.page < pagination.total_pages) {
+        html += createPageButton(pagination.page + 1, '다음');
+    }
+
+    html += createPageButton(pagination.total_pages, '마지막', pagination.page === pagination.total_pages);
+
+    html += `<span class="pagination-info">총 ${pagination.total}개 항목 (${pagination.page}/${pagination.total_pages} 페이지)</span>`;
 
     paginationDiv.innerHTML = html;
 }

@@ -129,6 +129,107 @@ export const autoMatchImageV4 = async (personImage, dressData, backgroundImage) 
 }
 
 /**
+ * 자동 매칭 API 호출 V5V5 일반 (일반 탭: 사람 + 드레스 + 배경) - V5 파이프라인 두 번 실행
+ * @param {File} personImage - 사용자 사진
+ * @param {Object|File} dressData - 드레스 데이터 (id, name, image, originalUrl) 또는 File 객체
+ * @param {File} backgroundImage - 배경 이미지 파일
+ * @param {string} traceId - 추적 ID
+ * @param {Object} profileFront - 프론트엔드 프로파일링 데이터
+ * @returns {Promise} 매칭된 이미지 결과 (v5_result 사용)
+ */
+export const autoMatchImageV5V5 = async (personImage, dressData, backgroundImage, traceId = null, profileFront = null) => {
+    try {
+        const formData = new FormData()
+        formData.append('person_image', personImage)
+
+        // 드레스 이미지 처리
+        if (dressData instanceof File) {
+            formData.append('garment_image', dressData)
+        } else if (dressData.originalUrl || dressData.image) {
+            // 드레스 URL이 있는 경우 File 객체로 변환
+            const dressUrl = dressData.originalUrl || dressData.image
+            const dressFile = await urlToFile(dressUrl, 'dress.jpg')
+            formData.append('garment_image', dressFile)
+            
+            // dress_id 추가 (dressData가 객체인 경우)
+            if (dressData.id) {
+                formData.append('dress_id', dressData.id.toString())
+            }
+        } else {
+            throw new Error('드레스 이미지가 필요합니다.')
+        }
+
+        // 배경 이미지 추가
+        if (!backgroundImage) {
+            throw new Error('배경 이미지가 필요합니다.')
+        }
+        formData.append('background_image', backgroundImage)
+
+        // 프로파일링 데이터 추가
+        if (profileFront) {
+            formData.append('profile_front', JSON.stringify(profileFront))
+        }
+
+        // 헤더 설정
+        const headers = {
+            'Content-Type': 'multipart/form-data',
+        }
+        if (traceId) {
+            headers['X-Trace-Id'] = traceId
+        }
+
+        // /tryon/compare 엔드포인트를 사용하여 v4_result와 v5_result를 모두 받음
+        const response = await api.post('/tryon/compare', formData, { headers })
+
+        // V4V5CompareResponse 반환 (v4_result와 v5_result를 모두 포함)
+        return response.data
+    } catch (error) {
+        console.error('자동 매칭 V5V5 일반 오류:', error)
+        throw error
+    }
+}
+
+/**
+ * 자동 매칭 API 호출 V5V5 커스텀 (커스텀 탭: 사람 + 드레스 + 배경) - CustomV5 파이프라인 두 번 실행
+ * @param {File} fullBodyImage - 전신 사진
+ * @param {File} dressImage - 드레스 이미지
+ * @param {File} backgroundImage - 배경 이미지
+ * @param {string} traceId - 추적 ID
+ * @param {Object} profileFront - 프론트엔드 프로파일링 데이터
+ * @returns {Promise} 매칭된 이미지 결과 (v5_result 사용)
+ */
+export const customV5V5MatchImage = async (fullBodyImage, dressImage, backgroundImage, traceId = null, profileFront = null) => {
+    try {
+        const formData = new FormData()
+        formData.append('person_image', fullBodyImage)
+        formData.append('garment_image', dressImage)
+        formData.append('background_image', backgroundImage)
+
+        // 프로파일링 데이터 추가
+        if (profileFront) {
+            formData.append('profile_front', JSON.stringify(profileFront))
+        }
+
+        // 헤더 설정
+        const headers = {
+            'Content-Type': 'multipart/form-data',
+        }
+        if (traceId) {
+            headers['X-Trace-Id'] = traceId
+        }
+
+        // /tryon/compare/custom 엔드포인트를 사용하여 v4_result와 v5_result를 모두 받음
+        const response = await api.post('/tryon/compare/custom', formData, { headers })
+
+        // V4V5CustomCompareResponse 반환 (v4_result와 v5_result를 모두 포함)
+        return response.data
+    } catch (error) {
+        console.error('CustomV5V5 매칭 오류:', error)
+        throw error
+    }
+}
+
+/**
  * CustomV4 매칭 API 호출 (의상 누끼 자동 처리 포함, Gemini 3 Flash)
  * @param {File} fullBodyImage - 전신 사진
  * @param {File} dressImage - 드레스 이미지
@@ -319,6 +420,36 @@ export const countVisitor = async () => {
     } catch (error) {
         // 접속자 카운팅 실패는 조용히 처리 (사용자 경험에 영향 없도록)
         return { success: false }
+    }
+}
+
+/**
+ * 드레스 체크 API 호출 (이미지가 드레스인지 확인)
+ * @param {File} imageFile - 드레스 이미지 파일
+ * @param {string} model - 사용할 모델 (gpt-4o-mini 또는 gpt-4o, 기본값: gpt-4o-mini)
+ * @param {string} mode - 체크 모드 (fast 또는 accurate, 기본값: fast)
+ * @returns {Promise} 드레스 체크 결과 { success: boolean, result: { dress: boolean } }
+ */
+export const checkDress = async (imageFile, model = 'gpt-4o-mini', mode = 'fast') => {
+    try {
+        const formData = new FormData()
+        formData.append('file', imageFile)
+        formData.append('model', model)
+        formData.append('mode', mode)
+
+        const response = await api.post('/api/dress/check', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        })
+
+        return response.data
+    } catch (error) {
+        console.error('[API] 드레스 체크 오류:', error)
+        console.error('[API] 에러 응답:', error.response?.data)
+        console.error('[API] 에러 상태:', error.response?.status)
+        console.error('[API] 요청 URL:', error.config?.url)
+        throw error
     }
 }
 

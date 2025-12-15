@@ -18,6 +18,9 @@ def get_db_connection():
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor
         )
+        # 한국시간(Asia/Seoul, UTC+9)으로 타임존 설정
+        with connection.cursor() as cursor:
+            cursor.execute("SET time_zone = '+09:00'")
         return connection
     except pymysql.Error as e:
         error_msg = str(e)
@@ -102,6 +105,7 @@ def init_database():
                 style_tips TEXT COMMENT '스타일 팁',
                 recommended_dresses TEXT COMMENT '추천 드레스 스타일',
                 avoid_dresses TEXT COMMENT '피해야 할 드레스 스타일',
+                definition_text TEXT COMMENT '라인별 체형 정의 텍스트 (A라인, H라인, X라인, O라인용)',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 INDEX idx_body_feature (body_feature)
@@ -110,6 +114,16 @@ def init_database():
             cursor.execute(create_body_type_definitions_table)
             connection.commit()
             print("DB 테이블 생성 완료: body_type_definitions")
+            
+            # 기존 테이블에 definition_text 컬럼 추가 (테이블이 이미 존재하는 경우)
+            try:
+                cursor.execute("ALTER TABLE body_type_definitions ADD COLUMN definition_text TEXT COMMENT '라인별 체형 정의 텍스트 (A라인, H라인, X라인, O라인용)'")
+                connection.commit()
+                print("definition_text 컬럼 추가 완료")
+            except Exception as e:
+                # 이미 컬럼이 존재하거나 다른 오류인 경우 무시
+                if "Duplicate column name" not in str(e) and "Unknown column" not in str(e):
+                    print(f"definition_text 컬럼 추가 시도: {e}")
             
             # body_type_definitions 초기 데이터 삽입 (데이터가 없을 때만)
             cursor.execute("SELECT COUNT(*) as count FROM body_type_definitions")
@@ -131,14 +145,78 @@ def init_database():
                 ]
                 
                 insert_query = """
-                INSERT INTO body_type_definitions (body_feature, strengths, style_tips, recommended_dresses, avoid_dresses)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO body_type_definitions (body_feature, strengths, style_tips, recommended_dresses, avoid_dresses, definition_text)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """
-                cursor.executemany(insert_query, initial_data)
+                # definition_text는 None으로 설정
+                initial_data_with_definition = [(row + (None,)) for row in initial_data]
+                cursor.executemany(insert_query, initial_data_with_definition)
                 connection.commit()
                 print(f"body_type_definitions 초기 데이터 삽입 완료: {len(initial_data)}개")
             else:
                 print(f"body_type_definitions 데이터 이미 존재: {count}개")
+            
+            # 라인별 체형 정의 데이터 삽입/업데이트 (항상 실행)
+            from pathlib import Path
+            base_dir = Path(__file__).parent.parent
+            definition_file = base_dir / "body_line_definitions.md"
+            
+            if definition_file.exists():
+                try:
+                    with open(definition_file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    # 마크다운 파싱하여 라인별로 분리
+                    line_definitions = []
+                    current_line = None
+                    current_text = []
+                    
+                    for line in content.split('\n'):
+                        # 라인 헤더 감지 (## X 라인, ## H 라인 등)
+                        if line.startswith('## '):
+                            # 이전 라인 저장
+                            if current_line and current_text:
+                                line_definitions.append((current_line, '\n'.join(current_text).strip()))
+                            
+                            # 새 라인 시작
+                            line_name = line.replace('## ', '').strip()
+                            # "X 라인 (X-Line) – 모래시계형" -> "X라인"
+                            if '라인' in line_name:
+                                parts = line_name.split('라인')
+                                if parts:
+                                    line_char = parts[0].strip()
+                                    current_line = line_char + '라인'
+                                else:
+                                    current_line = line_name
+                            else:
+                                current_line = line_name
+                            current_text = []
+                        elif line.startswith('---'):
+                            # 구분선 무시
+                            continue
+                        elif current_line:
+                            # 빈 줄이 아닌 경우 추가
+                            current_text.append(line)
+                    
+                    # 마지막 라인 저장
+                    if current_line and current_text:
+                        line_definitions.append((current_line, '\n'.join(current_text).strip()))
+                    
+                    # DB에 삽입/업데이트
+                    for line_name, definition_text in line_definitions:
+                        cursor.execute("""
+                            INSERT INTO body_type_definitions (body_feature, strengths, style_tips, recommended_dresses, avoid_dresses, definition_text)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                            ON DUPLICATE KEY UPDATE definition_text = VALUES(definition_text)
+                        """, (line_name, None, None, None, None, definition_text))
+                        print(f"라인별 정의 삽입/업데이트: {line_name}")
+                    
+                    connection.commit()
+                    print("라인별 체형 정의 데이터 삽입/업데이트 완료")
+                except Exception as e:
+                    print(f"라인별 체형 정의 삽입/업데이트 오류: {e}")
+            else:
+                print(f"라인별 체형 정의 파일을 찾을 수 없습니다: {definition_file}")
             
             # body_logs 테이블 생성
             create_body_logs_table = """
@@ -189,6 +267,81 @@ def init_database():
             cursor.execute(create_daily_visitors_table)
             connection.commit()
             print("DB 테이블 생성 완료: daily_visitors")
+            
+            # dress_check_logs 테이블 생성
+            create_dress_check_logs_table = """
+            CREATE TABLE IF NOT EXISTS dress_check_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                filename VARCHAR(255),
+                image_hash VARCHAR(64),
+                model VARCHAR(50),
+                mode VARCHAR(20),
+                predicted_dress BOOLEAN,
+                confidence FLOAT,
+                category VARCHAR(100),
+                verified_dress BOOLEAN DEFAULT NULL,
+                is_verified BOOLEAN DEFAULT FALSE,
+                verified_at TIMESTAMP NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_created_at (created_at),
+                INDEX idx_is_verified (is_verified),
+                INDEX idx_predicted (predicted_dress),
+                INDEX idx_verified (verified_dress)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='드레스 판별 로그 및 검수 결과';
+            """
+            cursor.execute(create_dress_check_logs_table)
+            connection.commit()
+            print("DB 테이블 생성 완료: dress_check_logs")
+            
+            # daily_synthesis_count 테이블 생성
+            create_daily_synthesis_count_table = """
+            CREATE TABLE IF NOT EXISTS daily_synthesis_count (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                synthesis_date DATE NOT NULL UNIQUE,
+                count INT DEFAULT 0,
+                INDEX idx_synthesis_date (synthesis_date)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='일별 합성 카운트';
+            """
+            cursor.execute(create_daily_synthesis_count_table)
+            connection.commit()
+            print("DB 테이블 생성 완료: daily_synthesis_count")
+            
+            # tryon_profile_summary 테이블 생성
+            create_tryon_profile_summary_table = """
+            CREATE TABLE IF NOT EXISTS tryon_profile_summary (
+                idx INT AUTO_INCREMENT PRIMARY KEY,
+                trace_id VARCHAR(255) NOT NULL UNIQUE COMMENT '프론트엔드에서 생성한 추적 ID',
+                endpoint VARCHAR(255) NOT NULL COMMENT '엔드포인트 경로 (/tryon/compare 또는 /tryon/compare/custom)',
+                front_profile_json JSON COMMENT '프론트엔드 측정 구간 시간 (ms)',
+                server_total_ms FLOAT COMMENT '서버 전체 처리 시간 (ms)',
+                gemini_call_ms FLOAT COMMENT 'Gemini API 호출 시간 (ms)',
+                cutout_ms FLOAT DEFAULT NULL COMMENT '의상 누끼 처리 시간 (ms, 커스텀만)',
+                status VARCHAR(50) NOT NULL COMMENT '성공 여부 (success/fail)',
+                error_stage VARCHAR(255) DEFAULT NULL COMMENT '에러 발생 단계 (선택사항)',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_trace_id (trace_id),
+                INDEX idx_endpoint (endpoint),
+                INDEX idx_created_at (created_at),
+                INDEX idx_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='피팅 프로파일링 요약 테이블';
+            """
+            cursor.execute(create_tryon_profile_summary_table)
+            connection.commit()
+            print("DB 테이블 생성 완료: tryon_profile_summary")
+            
+            # dress_fitting_logs 테이블 생성
+            create_dress_fitting_logs_table = """
+            CREATE TABLE IF NOT EXISTS dress_fitting_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                dress_id INT NOT NULL COMMENT '드레스 ID (dresses.idx 참조)',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '피팅 시각',
+                INDEX idx_dress_id (dress_id),
+                INDEX idx_created_at (created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='드레스 피팅 로그';
+            """
+            cursor.execute(create_dress_fitting_logs_table)
+            connection.commit()
+            print("DB 테이블 생성 완료: dress_fitting_logs")
     except Exception as e:
         print(f"테이블 생성 오류: {e}")
     finally:

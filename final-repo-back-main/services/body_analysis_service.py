@@ -89,10 +89,13 @@ class BodyAnalysisService:
             else:
                 rotation_angle = 90.0
         
+        # 어깨와 엉덩이 사이의 실제 거리 계산
+        distance = np.sqrt(dx**2 + dy**2)
+        
         print(f"[방향 감지] 세로: {is_vertical}, 가로: {is_horizontal}, 회전 필요: {needs_rotation}, 각도: {rotation_angle:.1f}도")
         print(f"  어깨 중심: ({shoulder_center_x:.3f}, {shoulder_center_y:.3f})")
         print(f"  엉덩이 중심: ({hip_center_x:.3f}, {hip_center_y:.3f})")
-        print(f"  x 차이: {dx:.3f}, y 차이: {dy:.3f}")
+        print(f"  거리: {distance:.3f}")
         
         return {
             "is_vertical": is_vertical,
@@ -122,13 +125,12 @@ class BodyAnalysisService:
         corrected_image = image.rotate(-rotation_angle, expand=True, fillcolor='white')
         return corrected_image
     
-    def extract_landmarks(self, image: Image.Image, auto_correct_orientation: bool = False) -> Optional[List[Dict]]:
+    def extract_landmarks(self, image: Image.Image) -> Optional[List[Dict]]:
         """
-        이미지에서 포즈 랜드마크 추출 (방향 자동 보정 포함)
+        이미지에서 포즈 랜드마크 추출
         
         Args:
-            image: PIL Image 객체
-            auto_correct_orientation: 자동 방향 보정 여부 (기본값: True)
+            image: PIL Image 객체 (EXIF orientation이 이미 적용된 이미지)
             
         Returns:
             랜드마크 좌표 리스트 (33개 포인트) 또는 None
@@ -137,23 +139,8 @@ class BodyAnalysisService:
             print("서비스가 초기화되지 않았습니다.")
             return None
         
-        # 1차 랜드마크 추출 (방향 확인용)
+        # 랜드마크 추출
         landmarks = self.pose_landmark_service.extract_landmarks(image)
-        
-        if landmarks is None or len(landmarks) < 33:
-            return landmarks
-        
-        # 방향 감지 및 자동 보정
-        if auto_correct_orientation:
-            orientation = self._detect_orientation(landmarks)
-            
-            if orientation["needs_rotation"]:
-                print(f"[방향 보정] 가로로 누운 이미지 감지, {orientation['rotation_angle']:.1f}도 회전 적용")
-                # 이미지 회전
-                corrected_image = self._correct_image_orientation(image, orientation["rotation_angle"])
-                # 회전된 이미지로 다시 랜드마크 추출
-                landmarks = self.pose_landmark_service.extract_landmarks(corrected_image)
-                print(f"[방향 보정] 회전 후 랜드마크 재추출 완료")
         
         return landmarks
     
@@ -311,9 +298,9 @@ class BodyAnalysisService:
         # 디버깅: 조건 체크
         print(f"  [조건 체크]")
         print(f"    X라인 (허리/어깨<0.82, 허리/엉덩이<1.30): {waist_shoulder_ratio < 0.82 and waist_hip_ratio < 1.30}")
-        print(f"    A라인 (< 1.40): {shoulder_hip_ratio < 1.40}")
-        print(f"    H라인 (1.40-1.65, 허리>=0.82): {1.40 <= shoulder_hip_ratio <= 1.65 and waist_shoulder_ratio >= 0.82}")
-        print(f"    O라인 (> 1.65): {shoulder_hip_ratio > 1.65}")
+        print(f"    A라인 (< 1.50): {shoulder_hip_ratio < 1.50}")
+        print(f"    H라인 (1.50-1.60, 허리>=0.90): {1.50 <= shoulder_hip_ratio <= 1.60 and waist_shoulder_ratio >= 0.90}")
+        print(f"    O라인 (> 1.60): {shoulder_hip_ratio > 1.60}")
         
         # 1. X라인 (모래시계형) - 허리가 매우 얇음
         # 허리/어깨 비율이 낮고 (< 0.82), 허리/엉덩이 비율도 낮은 경우
@@ -323,23 +310,26 @@ class BodyAnalysisService:
             description = "X라인(모래시계형) 체형에 가깝습니다. 어깨와 엉덩이가 비슷하고 허리가 얇은 특징을 보입니다."
         
         # 2. A라인 (역삼각형) - 어깨 < 엉덩이 (상대적으로)
-        # 실제 측정값: 1.4 미만인 경우 (엉덩이가 상대적으로 넓음)
-        elif shoulder_hip_ratio < 1.40:
+        # 실제 측정값: 1.5 미만인 경우 (엉덩이가 상대적으로 넓음)
+        # 사진에서 어깨가 넓게 나오는 것을 감안하여 기준 완화 (1.40 → 1.50)
+        elif shoulder_hip_ratio < 1.50:
             body_type = "A라인"
             confidence = 0.85
             description = "A라인 체형에 가깝습니다. 어깨보다 엉덩이가 넓은 특징을 보입니다."
         
-        # 3. H라인 (직선형) - 어깨 ≈ 엉덩이, 허리도 비슷
-        # 실제 측정값: 1.4-1.65 범위에서 허리가 그렇게 얇지 않은 경우
-        elif (1.40 <= shoulder_hip_ratio <= 1.65 and
-              waist_shoulder_ratio >= 0.82):  # 허리가 그렇게 얇지 않음
+        # 3. H라인 (직선형) - 어깨 ≈ 엉덩이, 허리도 비슷 (매우 엄격한 기준)
+        # 실제 측정값: 1.50-1.60 범위에서 허리가 거의 일자여야 함
+        # H라인은 거의 일자 체형만 해당되므로 범위를 좁히고 기준을 엄격하게
+        elif (1.50 <= shoulder_hip_ratio <= 1.60 and
+              waist_shoulder_ratio >= 0.90):  # 허리가 거의 일자 (더 엄격)
             body_type = "H라인"
             confidence = 0.85
             description = "H라인 체형에 가깝습니다. 어깨와 엉덩이가 비슷한 직선형 특징을 보입니다."
         
         # 4. O라인 (원형) - 어깨 > 엉덩이 또는 둥근 체형
-        # 실제 측정값: 1.65 이상인 경우 (어깨가 상대적으로 넓음)
-        elif shoulder_hip_ratio > 1.65:
+        # 실제 측정값: 1.60 이상인 경우 (어깨가 상대적으로 넓음)
+        # H라인 범위 축소로 인해 O라인 범위 확대 (1.65 → 1.60)
+        elif shoulder_hip_ratio > 1.60:
             body_type = "O라인"
             confidence = 0.80
             description = "O라인 체형에 가깝습니다. 어깨가 넓거나 균형잡힌 둥근 특징을 보입니다."

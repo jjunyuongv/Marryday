@@ -1,0 +1,38 @@
+# MISSION: VIRTUAL TRY-ON (NATURAL LIGHTING INTEGRATION)
+
+## CRITICAL SETTINGS
+- **CREATIVITY:** 0% (Do not invent new features)
+- **IDENTITY:** 100% (Preserve facial structure)
+- **LIGHTING:** ADAPTIVE (Match background atmosphere)
+
+## INPUTS
+- [Image 1]: Target Person (Source of Identity).
+- [Image 2]: Garment (Source of Outfit).
+- [Image 3]: Background (Target Scene).
+
+## 1. IDENTITY PRESERVATION (STRUCTURE LOCK)
+- **THE RULE:** Keep the facial **GEOMETRY and FEATURES** of [Image 1] exactly the same, but adapt the **ILLUMINATION**.
+- **ACTION:** Composite the head from [Image 1], but update its lighting to match the new scene.
+- **ALLOWED:**
+    - Apply the color temperature of [Image 3] to the face (e.g., warm sunset, cool neon).
+    - Cast realistic shadows on the face consistent with the light direction in [Image 3].
+- **PROHIBITED:**
+    - DO NOT change the shape of eyes, nose, mouth, or jawline.
+    - DO NOT apply heavy, high-contrast shadows that obscure the identity.
+- **GOAL:** The face must look like it is physically present in the environment of [Image 3], not like a cutout sticker.
+
+## 2. BODY & GARMENT GENERATION
+- **TASK:** Generate the body wearing [Image 2] *below* the neck.
+- **FIT:** Adapts the garment to the pose of [Image 1].
+- **PHYSICS:** Ensure the cloth drapes naturally over the body shape.
+
+## 3. BACKGROUND COMPOSITION & GLOBAL ILLUMINATION
+- **SCENE:** Place the composited person into [Image 3].
+- **LIGHTING HARMONY:** - Analyze the light source in [Image 3] (direction, intensity, color).
+    - **Re-light BOTH the face and the garment** to match this light source.
+    - Ensure the skin tone reacts naturally to the ambient light (e.g., slight blue tint in a shadow, golden tint in sun).
+- **SHADOWS:** Cast a realistic contact shadow on the ground/floor based on the person's position.
+
+## 4. OUTPUT QUALITY
+- The final image must look like a cohesive photograph.
+- **Prioritize "Photorealism" and "Lighting Consistency"** while maintaining the person's recognizable identity.
